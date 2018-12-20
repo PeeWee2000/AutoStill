@@ -1,0 +1,19 @@
+﻿<Page
+    x:Class="AutoStill.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AutoStill"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <TextBox x:Name="Dat_Boi" HorizontalAlignment="Center" Margin="0,86,0,0" Text="TextBox" VerticalAlignment="Top" Height="249" Width="969" FontSize="72"/>
+        <Button x:Name="LED_ON" Content="LED ON" HorizontalAlignment="Left" Margin="185,373,0,0" VerticalAlignment="Top" Height="225" Width="341" FontSize="36" Click="LED_ON_Click" RenderTransformOrigin="-0.517,0.45"/>
+        <Button x:Name="LED_OFF" Content="LED OFF" HorizontalAlignment="Left" Margin="185,690,0,0" VerticalAlignment="Top" Height="225" Width="341" FontSize="36" Click="LED_OFF_Click"/>
+        <Button x:Name="LED2_ON" Content="LED 2 ON" HorizontalAlignment="Left" Margin="688,373,0,0" VerticalAlignment="Top" RenderTransformOrigin="-2.461,-1.099" Height="225" Width="319" FontSize="36" Click="LED2_ON_Click"/>
+        <Button x:Name="LED2_OFF" Content="LED 2 OFF" HorizontalAlignment="Left" Margin="688,690,0,0" VerticalAlignment="Top" Height="225" Width="319" FontSize="36" Click="LED2_OFF_Click"/>
+
+    </Grid>
+</Page>
