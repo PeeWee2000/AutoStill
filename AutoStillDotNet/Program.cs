@@ -32,7 +32,7 @@ namespace AutoStillDotNet
             column.ColumnName = "ID";
             column.AutoIncrement = true;
             column.ReadOnly = true;
-            column.Unique = true;
+            column.Unique = true; 
 
             StillStats.Columns.Add(column);
 
@@ -72,16 +72,18 @@ namespace AutoStillDotNet
             PrimaryKeyColumns[0] = StillStats.Columns["id"];
             StillStats.PrimaryKey = PrimaryKeyColumns;
 
-            for( int i = 0; i<=2; i++)
-            { 
-            row = StillStats.NewRow();
-                row["ID"] = i;
+
+            for (int i = 0; i <= 2; i++)
+            {
+                row = StillStats.NewRow();
+                //row["ID"] = i;
                 row["Time"] = DateTime.Now;
                 row["Temperature"] = 666;
                 row["TemperatureDelta"] = 9001;
                 row["Pressure"] = 69;
                 StillStats.Rows.Add(row);
             }
+
 
             //Digital Pins
             byte Stop = 22;          //Red Button (Emergency Stop)
@@ -161,18 +163,78 @@ namespace AutoStillDotNet
                     driver.Send(new DigitalWriteRequest(FVPump, DigitalValue.Low));
                 }
 
+                //Turn on the element and vacuum sensor
                 driver.Send(new DigitalWriteRequest(VacuumPump, DigitalValue.High));
                 driver.Send(new DigitalWriteRequest(Element, DigitalValue.High));
-                int InitialRefluxTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(RFTempSensor)).PinValue.ToString());
-                int ETHPlateau = 0;
-                    //Start distilling and wait for first plateau
-                    while (driver.Send(new DigitalReadRequest(StillLowSwitch)).PinValue.ToString() == "Low") 
+
+                int CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(RFTempSensor)).PinValue.ToString());
+                int CurrentDelta = 0;
+                int Counter = 0;
+                int Temp1 = 0;
+                int Temp2 = 0;
+                double AverageDelta = 1.0;
+
+                row = StillStats.NewRow();
+                row["Time"] = DateTime.Now;
+                row["Temperature"] = CurrentTemp;
+                row["TemperatureDelta"] = 0;
+                row["Pressure"] = driver.Send(new AnalogReadRequest(VacuumSensor)).PinValue.ToString();
+                StillStats.Rows.Add(row);
+
+                //Get the last written row for collecting temperature rise statistics
+                DataRow LastRow = StillStats.Rows[0];
+
+                //Get two rows from two points in time 2.5 minutes apart so an average temperature change can be obtained the given time span
+                DataRow Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
+                DataRow Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
+
+                //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop
+
+                while (driver.Send(new DigitalReadRequest(StillLowSwitch)).PinValue.ToString() == "Low" && AverageDelta >= 0.02) 
                             
-                { }
+                {
+                    //Once the element has been on for 5 minutes start checking for the plateau
+                    if (Counter < 36)
+                    { Counter = Counter + 1; }
+                    else
+                    { Temp1 = Delta1.Field<Int32>("Temperature");
+                        Temp2 = Delta2.Field<Int32>("Temperature");
+                        AverageDelta = ((Temp2 - Temp1) / Temp2); }
 
-                    //Wait until end of first plateau
 
-                    
+                    System.Threading.Thread.Sleep(10000);
+                    CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(RFTempSensor)).PinValue.ToString());
+                    CurrentDelta = CurrentTemp -  LastRow.Field<Int32>("Temperature");
+                    row = StillStats.NewRow();
+                    row["Time"] = DateTime.Now;
+                    row["Temperature"] = CurrentTemp;
+                    row["TemperatureDelta"] = CurrentDelta;
+                    row["Pressure"] = driver.Send(new AnalogReadRequest(VacuumSensor)).PinValue.ToString();
+                    StillStats.Rows.Add(row);
+                    LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
+                }
+
+                //Once the first plateau is reached allowing for 2% variance in temperature wait until it ends 
+                //Or end the batch if the saftey limit switch is triggered
+                while (driver.Send(new DigitalReadRequest(StillLowSwitch)).PinValue.ToString() == "Low"  && AverageDelta <= 0.02)
+
+                {
+                    Temp1 = Delta1.Field<Int32>("Temperature");
+                    Temp2 = Delta2.Field<Int32>("Temperature");
+                    AverageDelta = ((Temp2 - Temp1) / Temp2);
+
+                    System.Threading.Thread.Sleep(10000);
+                    CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(RFTempSensor)).PinValue.ToString());
+                    CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
+                    row = StillStats.NewRow();
+                    row["Time"] = DateTime.Now;
+                    row["Temperature"] = CurrentTemp;
+                    row["TemperatureDelta"] = CurrentDelta;
+                    row["Pressure"] = driver.Send(new AnalogReadRequest(VacuumSensor)).PinValue.ToString();
+                    StillStats.Rows.Add(row);
+                    LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
+                }
+
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
