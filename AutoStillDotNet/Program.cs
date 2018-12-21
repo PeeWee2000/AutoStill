@@ -185,8 +185,8 @@ namespace AutoStillDotNet
                 DataRow LastRow = StillStats.Rows[0];
 
                 //Get two rows from two points in time 2.5 minutes apart so an average temperature change can be obtained the given time span
-                DataRow Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
-                DataRow Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
+                DataRow Delta1; 
+                DataRow Delta2;
 
                 //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop
 
@@ -197,12 +197,14 @@ namespace AutoStillDotNet
                     if (Counter < 36)
                     { Counter = Counter + 1; }
                     else
-                    { Temp1 = Delta1.Field<Int32>("Temperature");
+                    { Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
+                        Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
+                        Temp1 = Delta1.Field<Int32>("Temperature");
                         Temp2 = Delta2.Field<Int32>("Temperature");
                         AverageDelta = ((Temp2 - Temp1) / Temp2); }
 
 
-                    System.Threading.Thread.Sleep(10000);
+                    System.Threading.Thread.Sleep(100);
                     CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(RFTempSensor)).PinValue.ToString());
                     CurrentDelta = CurrentTemp -  LastRow.Field<Int32>("Temperature");
                     row = StillStats.NewRow();
@@ -219,6 +221,8 @@ namespace AutoStillDotNet
                 while (driver.Send(new DigitalReadRequest(StillLowSwitch)).PinValue.ToString() == "Low"  && AverageDelta <= 0.02)
 
                 {
+                    Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
+                    Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
                     Temp1 = Delta1.Field<Int32>("Temperature");
                     Temp2 = Delta2.Field<Int32>("Temperature");
                     AverageDelta = ((Temp2 - Temp1) / Temp2);
