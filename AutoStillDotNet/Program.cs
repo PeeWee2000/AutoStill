@@ -18,112 +18,24 @@ namespace AutoStillDotNet
         static void Main()
         {
 
-
-
-
-
             //Datatable for statistics and calculating when to turn the element off
-            DataTable StillStats = new DataTable("StillStats");
-            DataColumn column;
-            DataRow row;
+            DataTable StillStats = Statistics.InitializeTable();
+            var driver = ArduinoPeripherals.InitializeDriver();
 
-            column = new DataColumn();
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ColumnName = "ID";
-            column.AutoIncrement = true;
-            column.ReadOnly = true;
-            column.Unique = true; 
 
-            StillStats.Columns.Add(column);
 
-            column = new DataColumn();
-            column.ColumnName = "Time";
-            column.DataType = System.Type.GetType("System.DateTime");
-            column.ReadOnly = false;
-            column.Unique = false;
-
-            StillStats.Columns.Add(column);
-
-            column = new DataColumn();
-            column.ColumnName = "Temperature";
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ReadOnly = false;
-            column.Unique = false;
-
-            StillStats.Columns.Add(column);
             
-            column = new DataColumn();
-            column.ColumnName = "TemperatureDelta";
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ReadOnly = false;
-            column.Unique = false;
-
-            StillStats.Columns.Add(column);
-            
-            column = new DataColumn();
-            column.ColumnName = "Pressure";
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ReadOnly = false;
-            column.Unique = false;
-
-            StillStats.Columns.Add(column);
-
-            DataColumn[] PrimaryKeyColumns = new DataColumn[1];
-            PrimaryKeyColumns[0] = StillStats.Columns["id"];
-            StillStats.PrimaryKey = PrimaryKeyColumns;
-
-
-            for (int i = 0; i <= 2; i++)
-            {
-                row = StillStats.NewRow();
-                //row["ID"] = i;
-                row["Time"] = DateTime.Now;
-                row["Temperature"] = 666;
-                row["TemperatureDelta"] = 9001;
-                row["Pressure"] = 69;
-                StillStats.Rows.Add(row);
-            }
-
-
-            //Digital Pins
-            byte Stop = 22;          //Red Button (Emergency Stop)
-            byte Start = 23;         // Green Button (GO!)
-            byte FVSwitch = 24;      // Fermentation Vessel empty switch       
-            byte FVPump = 25;        //Pump leading from FV to Still
-            byte StillLowSwitch = 26;      //Still Safety Switch
-            byte StillFullSwitch = 27;      //Still Safety Switch
-            byte StillDrain = 28;    // Solenoid and or pump from still to waste
-            byte RVPump = 29;        //Solenoid and pump from receiving vessel to storage
-            byte Element = 30;      //Heating element
-            byte VacuumPump = 31;   //Dildos
-
-            //Analog Pins
-            byte RFTempSensor = 54; //Temperature sensor on top of reflux column
-            byte VacuumSensor = 55; // Vacuum sensor on FV
-                
             
 
-            //Declare the arduino itself
-            var driver = new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, "COM7", true);
-
-            //Digial inputs
-            driver.Send(new PinModeRequest(Stop, PinMode.Input));
-            driver.Send(new PinModeRequest(Start, PinMode.Input));
-            driver.Send(new PinModeRequest(FVSwitch, PinMode.Input));
-            driver.Send(new PinModeRequest(StillLowSwitch, PinMode.Input));
-
-
-            //Digital outputs
-            driver.Send(new PinModeRequest(FVPump, PinMode.Output));
-            driver.Send(new PinModeRequest(StillDrain, PinMode.Output));
-            driver.Send(new PinModeRequest(RVPump, PinMode.Output));
-            driver.Send(new PinModeRequest(Element, PinMode.Output));
-
-
-            //Sensor Inputs
-            driver.Send(new PinModeRequest(RFTempSensor, PinMode.Input));
-            driver.Send(new PinModeRequest(VacuumSensor, PinMode.Input));
-
+            //string Dev = "0";
+            //while (1 == 1)
+            //{
+            //    driver.Send(new DigitalWriteRequest(StillFullSwitch, DigitalValue.High));
+            //    driver.Send(new DigitalWriteRequest(StillFullSwitch, DigitalValue.Low));
+            //    driver.Send(new DigitalWriteRequest(Element, DigitalValue.High));
+            //    driver.Send(new DigitalWriteRequest(Element, DigitalValue.Low));
+            //    Dev = driver.Send(new AnalogReadRequest(RFTempSensor)).PinValue.ToString();
+            //}
 
             bool Run = false;
 
@@ -204,7 +116,7 @@ namespace AutoStillDotNet
                         AverageDelta = ((Temp2 - Temp1) / Temp2); }
 
 
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(10000);
                     CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(RFTempSensor)).PinValue.ToString());
                     CurrentDelta = CurrentTemp -  LastRow.Field<Int32>("Temperature");
                     row = StillStats.NewRow();
@@ -238,7 +150,6 @@ namespace AutoStillDotNet
                     StillStats.Rows.Add(row);
                     LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
                 }
-
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
