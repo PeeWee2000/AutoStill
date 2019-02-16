@@ -8,7 +8,7 @@ namespace AutoStillDotNet
 {
     class SystemProperties
     {
-        //Digital IO
+        //Digital IO Pins
         private byte fvemptyswitch = 1;
         private byte fvcompleteswitch = 1;
         private byte fvfluidpump = 1;
@@ -19,17 +19,20 @@ namespace AutoStillDotNet
         private byte stilldrainvalve = 1;
         private byte rvfluidpump = 1;
         private byte rvdrainvalve = 1;
-        private byte vacuumpump = 1;
+        private byte vacuumpump = 27;
         private byte fanset1 = 1;
         private byte fanset2 = 1;
         private byte fancontroller1 = 1;
         private byte fancontroller2 = 1;
 
-        //Analog IO
-        private byte sensorpressure = 1;
-        private byte sensorcolumntemp = 1;
+        //Analog IO Pins
+        private byte sensorpressure = 55;
+        private byte sensorcolumntemp = 54;
 
-
+        //System Targets (I.E. Target Pressure to Maintain)
+        private byte targetpressure = 200; //Target value in raw ADC units
+        private byte tgtpreshysteresisbuffer = 15; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
+        
 
         public byte FVEmptySwtich
         {
@@ -271,8 +274,34 @@ namespace AutoStillDotNet
         }
 
 
-
-
+        public byte TargetPressure
+        {
+            get
+            {
+                return targetpressure;
+            }
+            set
+            {
+                if ((value > 0) && (value < 13))
+                {
+                    targetpressure = value;
+                }
+            }
+        }
+        public byte TgtPresHysteresisBuffer
+        {
+            get
+            {
+                return tgtpreshysteresisbuffer;
+            }
+            set
+            {
+                if ((value > 0) && (value < 13))
+                {
+                    tgtpreshysteresisbuffer = value;
+                }
+            }
+        }
 
 
 

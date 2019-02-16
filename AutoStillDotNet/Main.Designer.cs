@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -41,13 +41,13 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
+            this.lblTemp1 = new System.Windows.Forms.Label();
+            this.lblStatus = new System.Windows.Forms.Label();
+            this.lblTemp2 = new System.Windows.Forms.Label();
+            this.lblTemp3 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
+            this.lblPressure = new System.Windows.Forms.Label();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -135,45 +135,45 @@
             this.label7.TabIndex = 8;
             this.label7.Text = "System Status";
             // 
-            // label8
+            // lblTemp1
             // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(15, 125);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(70, 24);
-            this.label8.TabIndex = 9;
-            this.label8.Text = "Temp1";
+            this.lblTemp1.AutoSize = true;
+            this.lblTemp1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTemp1.Location = new System.Drawing.Point(15, 125);
+            this.lblTemp1.Name = "lblTemp1";
+            this.lblTemp1.Size = new System.Drawing.Size(70, 24);
+            this.lblTemp1.TabIndex = 9;
+            this.lblTemp1.Text = "Temp1";
             // 
-            // label9
+            // lblStatus
             // 
-            this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(12, 35);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(108, 37);
-            this.label9.TabIndex = 10;
-            this.label9.Text = "Status";
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblStatus.Location = new System.Drawing.Point(12, 35);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(108, 37);
+            this.lblStatus.TabIndex = 10;
+            this.lblStatus.Text = "Status";
             // 
-            // label10
+            // lblTemp2
             // 
-            this.label10.AutoSize = true;
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(15, 246);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(70, 24);
-            this.label10.TabIndex = 11;
-            this.label10.Text = "Temp2";
+            this.lblTemp2.AutoSize = true;
+            this.lblTemp2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTemp2.Location = new System.Drawing.Point(15, 246);
+            this.lblTemp2.Name = "lblTemp2";
+            this.lblTemp2.Size = new System.Drawing.Size(70, 24);
+            this.lblTemp2.TabIndex = 11;
+            this.lblTemp2.Text = "Temp2";
             // 
-            // label11
+            // lblTemp3
             // 
-            this.label11.AutoSize = true;
-            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label11.Location = new System.Drawing.Point(15, 302);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(70, 24);
-            this.label11.TabIndex = 12;
-            this.label11.Text = "Temp3";
+            this.lblTemp3.AutoSize = true;
+            this.lblTemp3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTemp3.Location = new System.Drawing.Point(15, 302);
+            this.lblTemp3.Name = "lblTemp3";
+            this.lblTemp3.Size = new System.Drawing.Size(70, 24);
+            this.lblTemp3.TabIndex = 12;
+            this.lblTemp3.Text = "Temp3";
             // 
             // label12
             // 
@@ -193,29 +193,29 @@
             this.label13.TabIndex = 14;
             this.label13.Text = "This Run: 0 KWh";
             // 
-            // label14
+            // lblPressure
             // 
-            this.label14.AutoSize = true;
-            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(15, 179);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(85, 24);
-            this.label14.TabIndex = 15;
-            this.label14.Text = "Pressure";
+            this.lblPressure.AutoSize = true;
+            this.lblPressure.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPressure.Location = new System.Drawing.Point(15, 179);
+            this.lblPressure.Name = "lblPressure";
+            this.lblPressure.Size = new System.Drawing.Size(85, 24);
+            this.lblPressure.TabIndex = 15;
+            this.lblPressure.Text = "Pressure";
             // 
             // chart1
             // 
-            chartArea2.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chart1.Legends.Add(legend2);
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chart1.Legends.Add(legend1);
             this.chart1.Location = new System.Drawing.Point(856, 12);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.SemiTransparent;
-            series2.ChartArea = "ChartArea1";
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
-            this.chart1.Series.Add(series2);
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.chart1.Series.Add(series1);
             this.chart1.Size = new System.Drawing.Size(419, 290);
             this.chart1.TabIndex = 16;
             this.chart1.Text = "Current Run Temperature vs Time";
@@ -236,13 +236,13 @@
             this.ClientSize = new System.Drawing.Size(1287, 603);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.chart1);
-            this.Controls.Add(this.label14);
+            this.Controls.Add(this.lblPressure);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label12);
-            this.Controls.Add(this.label11);
-            this.Controls.Add(this.label10);
-            this.Controls.Add(this.label9);
-            this.Controls.Add(this.label8);
+            this.Controls.Add(this.lblTemp3);
+            this.Controls.Add(this.lblTemp2);
+            this.Controls.Add(this.lblStatus);
+            this.Controls.Add(this.lblTemp1);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -275,13 +275,13 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label lblTemp1;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Label lblTemp2;
+        private System.Windows.Forms.Label lblTemp3;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label lblPressure;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.DataGridView dataGridView1;
     }

@@ -13,7 +13,7 @@ namespace AutoStillDotNet
 
             //Declare the arduino itself
             var properties = new SystemProperties();
-            var driver = new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, "COM8", true);
+            var driver = new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, "COM7", true);
 
             //Digial inputs
             driver.Send(new PinModeRequest(properties.FVEmptySwtich, PinMode.Input));
