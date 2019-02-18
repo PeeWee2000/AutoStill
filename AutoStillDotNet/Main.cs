@@ -24,6 +24,10 @@ namespace AutoStillDotNet
         public volatile bool StillFull = false;
         public volatile bool ElementOn = false;
         public volatile bool VacuumPumpOn = false;
+        public volatile bool StillPumpOn = false;
+        public volatile bool StillValveOpen = false;
+        public volatile bool RVPumpOn = false;
+        public volatile bool RVValveOpen = false;
 
 
 
@@ -31,6 +35,7 @@ namespace AutoStillDotNet
         public Main()
         {
             InitializeComponent();
+            lblStatus.Text = "Initializing";
 
             //Datatable for statistics and calculating when to turn the element off
             DataTable StillStats = Statistics.InitializeTable();
@@ -46,6 +51,8 @@ namespace AutoStillDotNet
             Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
 
             //Background worker to monitor all sensors and switches on the still and keep global variables and the UI updated
+            //The idea here is to imtermittently check all variables and write to a local variable in memory to minimize commands sent to the arduino
+            //This is also convienent as it minimizes the amount of long of code required to message the arduino in the control loop
             StillMonitor = new BackgroundWorker();
             StillMonitor.WorkerSupportsCancellation = true;
             StillMonitor.DoWork += new DoWorkEventHandler((state, args) =>
@@ -60,24 +67,171 @@ namespace AutoStillDotNet
                     MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp; }));
                     System.Threading.Thread.Sleep(250);
 
-                    //Check the low level switch
-                    if (driver.Send(new DigitalReadRequest(properties.StillHighSwitch)).PinValue.ToString() == "Low")
-                    { StillFull = true; }
-                    else
-                    { StillFull = false; }
+
+                    //Check the low level switch -- a value of low means the lower still switch is open
+                    MainDispatcher.Invoke(new Action(() => {
+                        if (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "Low")
+                        { StillEmpty = true; }
+                        else
+                        { StillEmpty = false; }
+                    }));
                     System.Threading.Thread.Sleep(250);
 
-                    //Check the low level switch
-                    if (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "Low")
-                    { StillEmpty = true; }
-                    else
-                    { StillEmpty = false; }
+                    //Check the high level switch -- a value of high means the upper still switch is closed
+                    MainDispatcher.Invoke(new Action(() => {
+                        if (driver.Send(new DigitalReadRequest(properties.StillHighSwitch)).PinValue.ToString() == "High")
+                        { StillFull = true; }
+                        else
+                        { StillFull = false; }
+                    }));
                     System.Threading.Thread.Sleep(250);
 
                     //Check the pressure
                     MainDispatcher.Invoke(new Action(() => { Pressure = driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString(); }));
                     MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Pressure; }));
 
+                } while (true);
+            });
+
+       
+
+
+            StillController = new BackgroundWorker();
+            StillController.WorkerSupportsCancellation = true;
+            StillController.DoWork += new DoWorkEventHandler((state, args) =>
+
+            {
+                do
+                {
+                    //Run unless a stop condition is hit
+                    if (Run != true)
+                    { break; }
+
+                    //Check to see if the still is full, if not fill it. This ensures there is no product wasted if the previous batch was stopped half way
+                    if (StillFull == false  && Phase == 0)
+                    {
+                        {
+                            //Open the inlet valve and turn the inlet pump on
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.Low)); }));
+                            StillValveOpen = true;
+                            //Wait 5 seconds for the valve to open
+                            System.Threading.Thread.Sleep(5000);
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.Low)); }));
+                            MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Still"; }));
+                            StillPumpOn = true;
+                                                        
+                            //Check once a second to see if the still is full now -- note that StillFull is updated by the monitor worker
+                            while (StillFull == false)
+                            {
+                                System.Threading.Thread.Sleep(1000);
+                            }
+                            //Close the valve and turn off the pump
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High)); }));
+                            StillValveOpen = false;
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.High)); }));
+                            MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Complete"; }));
+
+                            StillPumpOn = false;
+
+                            //If this line is reached that means the still has liquid in it and is ready to start distilling
+                            Phase = 1;
+                        }
+                    }
+
+                    //Make sure the first loop was passed and the still didnt magically empty itself
+                    if (Phase == 1 && StillFull == true)
+                    {
+                        //Turn on the element and vacuum pump
+                        driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.Low));
+                        ElementOn = true;
+                        PressureRegulator.RunWorkerAsync();
+                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Distilling"; }));
+
+
+
+                        //Set up variables for calculating when to turn off the element
+                        int CurrentTemp = Convert.ToInt16(ColumnTemp);
+                        int CurrentDelta = 0;
+                        int Counter = 0;
+                        int Temp1 = 0;
+                        int Temp2 = 0;
+                        double AverageDelta = 1.0;
+                       
+                        DataRow row;
+
+                        row = StillStats.NewRow();
+                        row["Time"] = DateTime.Now;
+                        row["Temperature"] = CurrentTemp;
+                        row["TemperatureDelta"] = 0;
+                        row["Pressure"] = Convert.ToInt16(Pressure);
+                        StillStats.Rows.Add(row);
+
+                        //Get the last written row for collecting temperature rise statistics
+                        DataRow LastRow = StillStats.Rows[0];
+
+                        //Get two rows from two points in time 2.5 minutes apart so an average temperature change can be obtained from the given time span
+                        DataRow Delta1;
+                        DataRow Delta2;
+
+                        //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop
+                        while (StillEmpty == false && AverageDelta >= 0.02)
+
+                        {
+                            //Once the element has been on for 10 minutes start checking for the plateau
+                            if (Counter < 60)
+                            {
+                                Counter = Counter + 1;
+                            }
+                            else
+                            {
+                                Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
+                                Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
+                                Temp1 = Delta1.Field<Int32>("Temperature");
+                                Temp2 = Delta2.Field<Int32>("Temperature");
+                                AverageDelta = ((Temp2 - Temp1) / Temp2);
+                            }
+
+
+                            System.Threading.Thread.Sleep(10000);
+                            CurrentTemp = Convert.ToInt32(ColumnTemp);
+                            CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
+                            row = StillStats.NewRow();
+                            row["Time"] = DateTime.Now;
+                            row["Temperature"] = CurrentTemp;
+                            row["TemperatureDelta"] = CurrentDelta;
+                            row["Pressure"] = Convert.ToInt16(Pressure);
+                            StillStats.Rows.Add(row);
+                            LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
+                        }
+
+                        //Once the first plateau is reached allowing for 2% variance in temperature wait until it ends 
+                        //Or end the batch if the saftey limit switch is triggered
+                        while (StillEmpty == false && AverageDelta <= 0.02)
+
+                        {
+                            Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
+                            Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
+                            Temp1 = Delta1.Field<Int32>("Temperature");
+                            Temp2 = Delta2.Field<Int32>("Temperature");
+                            AverageDelta = ((Temp2 - Temp1) / Temp2);
+
+                            System.Threading.Thread.Sleep(10000);
+                            CurrentTemp = Convert.ToInt32(ColumnTemp);
+                            CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
+                            row = StillStats.NewRow();
+                            row["Time"] = DateTime.Now;
+                            row["Temperature"] = CurrentTemp;
+                            row["TemperatureDelta"] = CurrentDelta;
+                            row["Pressure"] = Convert.ToInt16(Pressure);
+                            StillStats.Rows.Add(row);
+                            LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
+                        }
+                        
+                        //Batch complete!
+                        driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High));
+                        ElementOn = false;
+                        Phase = 2;
+                    }
                 } while (true);
             });
 
@@ -88,6 +242,10 @@ namespace AutoStillDotNet
             {
                 do
                 {
+                    //Make sure the pump is off
+                    MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
+                    VacuumPumpOn = false;
+
                     if (Run != true)
                     { break; }
 
@@ -113,140 +271,11 @@ namespace AutoStillDotNet
                 } while (true);
             });
 
-
-            StillController = new BackgroundWorker();
-            StillController.WorkerSupportsCancellation = true;
-            StillController.DoWork += new DoWorkEventHandler((state, args) =>
-
-            {
-                do
-                {
-                    //Run unless a stop condition is hit
-                    if (Run != true)
-                    { break; }
-
-                        //Check to see if there is any liquid in the still, if so check the full switch to see if the liquid is tails or a fresh batch
-                        //(the circuit is closed when the still is empty)
-                        if (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "Low")
-                        {
-                            if (driver.Send(new DigitalReadRequest(properties.StillHighSwitch)).PinValue.ToString() == "High")
-                            {
-                                while (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "Low")
-                                {
-                                    driver.Send(new DigitalWriteRequest(properties.StillDrainValve, DigitalValue.High));
-                                    System.Threading.Thread.Sleep(60000);
-                                }
-                                driver.Send(new DigitalWriteRequest(properties.StillDrainValve, DigitalValue.Low));
-                            //The phase integer is used to let the controller background worker know what if loop to enter while looping
-                            Phase = 1;
-                            }
-                        }
-
-                        //Check to see if there is any liquid in the fermentation vessel, if so then check to see that fermentation is complete, if so pump it into the still
-                        //The switches are closed (high) when the black parts are touching -- so the switch should fall and be open (low) when the vessel is empty
-                        if (Phase == 1 && driver.Send(new DigitalReadRequest(properties.FVEmptySwtich)).PinValue.ToString() == "High" && driver.Send(new DigitalReadRequest(properties.FVCompleteSwitch)).PinValue.ToString() == "Low")
-                        {
-                            //Start pumping and check to see if the still is full every 15 seconds
-                            driver.Send(new DigitalWriteRequest(properties.FVFluidPump, DigitalValue.High));
-                            while (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "High")
-                            {
-                                System.Threading.Thread.Sleep(15000);
-                            }
-                            driver.Send(new DigitalWriteRequest(properties.FVFluidPump, DigitalValue.Low));
-                        Phase = 2;
-                        }
-
-                    if (Phase == 2)
-                    {
-                        //    //Turn on the element and vacuum sensor
-                        driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High));
-                        driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High));
-
-                        int CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString());
-                        int CurrentDelta = 0;
-                        int Counter = 0;
-                        int Temp1 = 0;
-                        int Temp2 = 0;
-                        double AverageDelta = 1.0;
-
-                        DataRow row;
-
-                        row = StillStats.NewRow();
-                        row["Time"] = DateTime.Now;
-                        row["Temperature"] = CurrentTemp;
-                        row["TemperatureDelta"] = 0;
-                        row["Pressure"] = driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString();
-                        StillStats.Rows.Add(row);
-
-                        //Get the last written row for collecting temperature rise statistics
-                        DataRow LastRow = StillStats.Rows[0];
-
-                        //Get two rows from two points in time 2.5 minutes apart so an average temperature change can be obtained from the given time span
-                        DataRow Delta1;
-                        DataRow Delta2;
-
-                        //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop
-
-                        while (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "Low" && AverageDelta >= 0.02)
-
-                        {
-                            //Once the element has been on for 5 minutes start checking for the plateau
-                            if (Counter < 30)
-                            {
-                                Counter = Counter + 1;
-                            }
-                            else
-                            {
-                                Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
-                                Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
-                                Temp1 = Delta1.Field<Int32>("Temperature");
-                                Temp2 = Delta2.Field<Int32>("Temperature");
-                                AverageDelta = ((Temp2 - Temp1) / Temp2);
-                            }
-
-
-                            System.Threading.Thread.Sleep(10000);
-                            CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString());
-                            CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
-                            row = StillStats.NewRow();
-                            row["Time"] = DateTime.Now;
-                            row["Temperature"] = CurrentTemp;
-                            row["TemperatureDelta"] = CurrentDelta;
-                            row["Pressure"] = driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString();
-                            StillStats.Rows.Add(row);
-                            LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
-                        }
-
-                        //Once the first plateau is reached allowing for 2% variance in temperature wait until it ends 
-                        //Or end the batch if the saftey limit switch is triggered
-                        while (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "Low" && AverageDelta <= 0.02)
-
-                        {
-                            Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
-                            Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
-                            Temp1 = Delta1.Field<Int32>("Temperature");
-                            Temp2 = Delta2.Field<Int32>("Temperature");
-                            AverageDelta = ((Temp2 - Temp1) / Temp2);
-
-                            System.Threading.Thread.Sleep(10000);
-                            CurrentTemp = Convert.ToInt32(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString());
-                            CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
-                            row = StillStats.NewRow();
-                            row["Time"] = DateTime.Now;
-                            row["Temperature"] = CurrentTemp;
-                            row["TemperatureDelta"] = CurrentDelta;
-                            row["Pressure"] = driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString();
-                            StillStats.Rows.Add(row);
-                            LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
-                        }
-                    }
-                } while (true);
-            });
-
-
-            //StillController.RunWorkerAsync();
+            //Start the workers and pause for 2 seconds to allow for initial values to be collected
             StillMonitor.RunWorkerAsync();
-            PressureRegulator.RunWorkerAsync();
+            System.Threading.Thread.Sleep(2000);
+            StillController.RunWorkerAsync();
+            
 
        
         }

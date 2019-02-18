@@ -18,11 +18,22 @@ namespace AutoStillDotNet
             //Digial inputs
             driver.Send(new PinModeRequest(properties.FVEmptySwtich, PinMode.Input));
             driver.Send(new PinModeRequest(properties.FVCompleteSwitch, PinMode.Input));
-            driver.Send(new PinModeRequest(properties.FVFluidPump, PinMode.Input));
+            driver.Send(new PinModeRequest(properties.StillFluidPump, PinMode.Input));
             driver.Send(new PinModeRequest(properties.StillLowSwitch, PinMode.Input));
             driver.Send(new PinModeRequest(properties.StillHighSwitch, PinMode.Input));
 
             //Digital outputs
+            driver.Send(new PinModeRequest(properties.StillFillValve, PinMode.Output));
+
+            //Set all the starting values to 0 since the stupid relay board is jank
+            driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.Low));
+            System.Threading.Thread.Sleep(3000);
+            driver.Send(new PinModeRequest(properties.StillFluidPump, PinMode.Output));
+
+            driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.High));
+
+
+
             driver.Send(new PinModeRequest(properties.StillElement, PinMode.Output));
             driver.Send(new PinModeRequest(properties.StillDrainValve, PinMode.Output));
             driver.Send(new PinModeRequest(properties.RVFluidPump, PinMode.Output));
@@ -38,6 +49,17 @@ namespace AutoStillDotNet
             //Analog Outputs
             driver.Send(new PinModeRequest(properties.FanController1, PinMode.Output));
             driver.Send(new PinModeRequest(properties.FanController2, PinMode.Output));
+
+
+
+            //Set all the starting values to 0 since the stupid relay board is jank
+
+            driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High));
+            driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High));
+            driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.High));
+            driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High));
+
+
 
             //Send the initialized driver object back to whatever called this sub
             return driver;

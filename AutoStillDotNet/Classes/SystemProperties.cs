@@ -11,14 +11,14 @@ namespace AutoStillDotNet
         //Digital IO Pins
         private byte fvemptyswitch = 1;
         private byte fvcompleteswitch = 1;
-        private byte fvfluidpump = 1;
-        private byte stillfillvalve = 1;
-        private byte stilllowswitch = 1;
-        private byte stillhighswitch = 1;
+        private byte stillfluidpump = 30;
+        private byte stillfillvalve = 28;
+        private byte stilllowswitch = 49;
+        private byte stillhighswitch = 51;
         private byte stillelement = 1;
         private byte stilldrainvalve = 1;
-        private byte rvfluidpump = 1;
-        private byte rvdrainvalve = 1;
+        private byte rvfluidpump = 32;
+        private byte rvdrainvalve = 31;
         private byte vacuumpump = 27;
         private byte fanset1 = 1;
         private byte fanset2 = 1;
@@ -62,17 +62,17 @@ namespace AutoStillDotNet
                 }
             }
         }
-        public byte FVFluidPump
+        public byte StillFluidPump
         {
             get
             {
-                return fvfluidpump;
+                return stillfluidpump;
             }
             set
             {
                 if ((value > 0) && (value < 13))
                 {
-                    fvfluidpump = value;
+                    stillfluidpump = value;
                 }
             }
         }
