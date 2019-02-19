@@ -31,7 +31,6 @@ namespace AutoStillDotNet
 
 
 
-
         public Main()
         {
             InitializeComponent();
@@ -39,6 +38,9 @@ namespace AutoStillDotNet
 
             //Datatable for statistics and calculating when to turn the element off
             DataTable StillStats = Statistics.InitializeTable();
+
+            Statistics.CreateHeader(DateTime.Now, DateTime.Now, true);
+
 
             //Hardware Addresses and other settings
             var properties = new SystemProperties();
@@ -103,6 +105,8 @@ namespace AutoStillDotNet
             {
                 do
                 {
+                    DateTime RunStart = DateTime.Now;
+
                     //Run unless a stop condition is hit
                     if (Run != true)
                     { break; }
@@ -231,6 +235,15 @@ namespace AutoStillDotNet
                         driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High));
                         ElementOn = false;
                         Phase = 2;
+                    }
+                    //If the run completed without issue then calculate the header info and write the data to a local sqldb
+                    //Note that this must be done sequentially as the records must relate to a header record
+                    //Once the table is succesfully written set the phase back to 0 and start another run
+                    if (Phase == 2)
+                    {
+                        Statistics.CreateHeader(RunStart, DateTime.Now, true);
+                        Statistics.SaveRun(StillStats);
+                        Phase = 0;
                     }
                 } while (true);
             });
