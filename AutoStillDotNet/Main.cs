@@ -5,6 +5,8 @@ using System.Windows.Forms;
 using System.Data;
 using System.Windows.Threading;
 using System.ComponentModel;
+using System.Windows.Forms.DataVisualization.Charting;
+using System.Drawing;
 
 namespace AutoStillDotNet
 {
@@ -30,7 +32,6 @@ namespace AutoStillDotNet
         public volatile bool RVValveOpen = false;
 
 
-
         public Main()
         {
             InitializeComponent();
@@ -39,8 +40,33 @@ namespace AutoStillDotNet
             //Datatable for statistics and calculating when to turn the element off
             DataTable StillStats = Statistics.InitializeTable();
 
-            Statistics.CreateHeader(DateTime.Now, DateTime.Now, true);
+            chartRun.DataSource = StillStats;
 
+            ChartArea chartArea = new ChartArea();
+            chartRun.ChartAreas[0].Axes[0].MajorGrid.Enabled = false;//x axis
+            chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "P";
+            //chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 13);
+            chartRun.ChartAreas[0].AxisX.Interval = 1;
+            chartRun.ChartAreas[0].Axes[1].MajorGrid.Enabled = true;//y axis
+
+            Series tempvtime = new Series("Temperature");
+            tempvtime.BorderWidth = 2;
+            tempvtime.Color = Color.Green;
+            tempvtime.XValueMember = "Time";
+            tempvtime.XValueMember = "Temperature";
+            chartRun.Series.Add(tempvtime);
+            chartRun.Series[1].ChartType = SeriesChartType.Line;
+            
+
+            //double[] values = { 0.2, 0, 0, 0.1, 0.2, 0.3, 0, 0, 0, 0, 0.1, 0.3, 0.2, 0.2 };
+            //string[] s = { "1/3/2017", "1/4/2017", "1/5/2017", "1/9/2017", "1/10/2017", "1/11/2017", "1/12/2017", "13/01/2017", "16/01/2017", "17/01/2017", "18/01/2017", "19/01/2017", "20/01/2017", "20/01/2017" };
+            //int x = 0;
+
+            //foreach (var v in values)
+            //{
+            //    tempvtime.Points.AddXY(s[x], v);
+            //    x++;
+            //}
 
             //Hardware Addresses and other settings
             var properties = new SystemProperties();
@@ -157,8 +183,8 @@ namespace AutoStillDotNet
                         int CurrentTemp = Convert.ToInt16(ColumnTemp);
                         int CurrentDelta = 0;
                         int Counter = 0;
-                        int Temp1 = 0;
-                        int Temp2 = 0;
+                        double Temp1 = 0.0;
+                        double Temp2 = 0.0;
                         double AverageDelta = 1.0;
                        
                         DataRow row;
@@ -195,8 +221,8 @@ namespace AutoStillDotNet
                                 AverageDelta = ((Temp2 - Temp1) / Temp2);
                             }
 
-
-                            System.Threading.Thread.Sleep(10000);
+                            //Change this back to 10 seconds
+                            System.Threading.Thread.Sleep(250);
                             CurrentTemp = Convert.ToInt32(ColumnTemp);
                             CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
                             row = StillStats.NewRow();
@@ -217,9 +243,9 @@ namespace AutoStillDotNet
                             Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
                             Temp1 = Delta1.Field<Int32>("Temperature");
                             Temp2 = Delta2.Field<Int32>("Temperature");
-                            AverageDelta = ((Temp2 - Temp1) / Temp2);
-
-                            System.Threading.Thread.Sleep(10000);
+                            AverageDelta = Math.Abs(((Temp2 - Temp1) / Temp2));
+                            //Change this back to 10 seconds
+                            System.Threading.Thread.Sleep(250);
                             CurrentTemp = Convert.ToInt32(ColumnTemp);
                             CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
                             row = StillStats.NewRow();
@@ -242,7 +268,7 @@ namespace AutoStillDotNet
                     if (Phase == 2)
                     {
                         Statistics.CreateHeader(RunStart, DateTime.Now, true);
-                        Statistics.SaveRun(StillStats);
+                        Statistics.SaveRun(StillStats, RunStart);
                         Phase = 0;
                     }
                 } while (true);

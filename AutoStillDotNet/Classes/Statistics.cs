@@ -53,6 +53,22 @@ namespace AutoStillDotNet
 
             StillStats.Columns.Add(column);
 
+            column = new DataColumn();
+            column.ColumnName = "Phase";
+            column.DataType = System.Type.GetType("System.Int32");
+            column.ReadOnly = false;
+            column.Unique = false;
+
+            StillStats.Columns.Add(column);
+
+            column = new DataColumn();
+            column.ColumnName = "Amperage";
+            column.DataType = System.Type.GetType("System.Int32");
+            column.ReadOnly = false;
+            column.Unique = false;
+
+            StillStats.Columns.Add(column);
+
             DataColumn[] PrimaryKeyColumns = new DataColumn[1];
         PrimaryKeyColumns[0] = StillStats.Columns["id"];
             StillStats.PrimaryKey = PrimaryKeyColumns;
@@ -89,6 +105,7 @@ namespace AutoStillDotNet
             //Variable to hold the run header ID to make sure the records are linked to the run properly
             int HeaderID;
 
+            //Open the connection, get the header ID and then insert the table
             sqlConnection.Open();
             using (var command = new SqlCommand())
             {
@@ -101,7 +118,8 @@ namespace AutoStillDotNet
             //Command to save the table using stored procedure InsertRunRecord
             using (var command = new SqlCommand("InsertRunRecord") { CommandType = CommandType.StoredProcedure })
             {
-                command.Parameters.Add(new SqlParameter("@RunTable", RunData));
+                command.Parameters.Add(new SqlParameter("@runrecordtype", RunData));
+                command.Parameters.Add(new SqlParameter("@RHID", HeaderID));
                 command.Connection = sqlConnection;
                 command.ExecuteNonQuery();
             }

@@ -48,10 +48,10 @@
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.lblPressure = new System.Windows.Forms.Label();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.chartRun = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chartRun)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -203,22 +203,22 @@
             this.lblPressure.TabIndex = 15;
             this.lblPressure.Text = "Pressure";
             // 
-            // chart1
+            // chartRun
             // 
             chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
+            this.chartRun.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(856, 12);
-            this.chart1.Name = "chart1";
-            this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.SemiTransparent;
+            this.chartRun.Legends.Add(legend1);
+            this.chartRun.Location = new System.Drawing.Point(856, 12);
+            this.chartRun.Name = "chartRun";
+            this.chartRun.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.SemiTransparent;
             series1.ChartArea = "ChartArea1";
             series1.Legend = "Legend1";
             series1.Name = "Series1";
-            this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(419, 290);
-            this.chart1.TabIndex = 16;
-            this.chart1.Text = "Current Run Temperature vs Time";
+            this.chartRun.Series.Add(series1);
+            this.chartRun.Size = new System.Drawing.Size(419, 290);
+            this.chartRun.TabIndex = 16;
+            this.chartRun.Text = "Current Run Temperature vs Time";
             // 
             // dataGridView1
             // 
@@ -235,7 +235,7 @@
             this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.ClientSize = new System.Drawing.Size(1287, 603);
             this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.chart1);
+            this.Controls.Add(this.chartRun);
             this.Controls.Add(this.lblPressure);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label12);
@@ -257,7 +257,7 @@
             this.Text = "AutoStill";
             this.Load += new System.EventHandler(this.Main_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chartRun)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -282,7 +282,7 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lblPressure;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chartRun;
         private System.Windows.Forms.DataGridView dataGridView1;
     }
 }
