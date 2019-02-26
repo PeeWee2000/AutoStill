@@ -30,12 +30,17 @@ namespace AutoStillDotNet
         public volatile bool StillValveOpen = false;
         public volatile bool RVPumpOn = false;
         public volatile bool RVValveOpen = false;
+        public volatile bool RVFull = true;
+        public volatile bool RVEmpty = true;
+        public volatile float RVWeight = Convert.ToSingle(0.0);
 
 
         public Main()
         {
             InitializeComponent();
             lblStatus.Text = "Initializing";
+            //Hardware Addresses and other settings
+            var properties = new SystemProperties();
 
             //Datatable for statistics and calculating when to turn the element off
             DataTable StillStats = Statistics.InitializeTable();
@@ -44,35 +49,45 @@ namespace AutoStillDotNet
 
             ChartArea chartArea = new ChartArea();
             chartRun.ChartAreas[0].Axes[0].MajorGrid.Enabled = false;//x axis
-            chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "P";
-            //chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 13);
-            chartRun.ChartAreas[0].AxisX.Interval = 1;
-            chartRun.ChartAreas[0].Axes[1].MajorGrid.Enabled = true;//y axis
+            chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "####0°" + ((properties.Units == "Metric") ? "C" : "F"); //Set the Y axis to use up to 4 digits and if there is no digit set a 0 then tack a degree and a "C" on the end -- documentation available here https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings 
+            chartRun.ChartAreas[0].AxisY.IntervalType = DateTimeIntervalType.Number; //Dont know why it has to be a "DateTime" interval type but it works
 
-            Series tempvtime = new Series("Temperature");
-            tempvtime.BorderWidth = 2;
-            tempvtime.Color = Color.Green;
-            tempvtime.XValueMember = "Time";
-            tempvtime.XValueMember = "Temperature";
-            chartRun.Series.Add(tempvtime);
-            chartRun.Series[1].ChartType = SeriesChartType.Line;
+            //chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 13);
+            chartRun.ChartAreas[0].AxisX.LabelStyle.Format = "mm:ss";
+            chartRun.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Seconds;
+            chartRun.ChartAreas[0].Axes[1].MajorGrid.Enabled = true;//y axis
+            chartRun.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
+            chartRun.ChartAreas[0].AxisY2.LabelStyle.Format = "###0.0##" + ((properties.Units == "Metric") ? "kPa" : "PSI");
+            chartRun.ChartAreas[0].AxisY2.IntervalAutoMode = IntervalAutoMode.FixedCount;
+            //chartRun.ChartAreas[0].AxisY2.IntervalType = System.Windows.Forms.DataVisualization.Charting.IntervalType.Number;
             
 
-            //double[] values = { 0.2, 0, 0, 0.1, 0.2, 0.3, 0, 0, 0, 0, 0.1, 0.3, 0.2, 0.2 };
-            //string[] s = { "1/3/2017", "1/4/2017", "1/5/2017", "1/9/2017", "1/10/2017", "1/11/2017", "1/12/2017", "13/01/2017", "16/01/2017", "17/01/2017", "18/01/2017", "19/01/2017", "20/01/2017", "20/01/2017" };
-            //int x = 0;
 
-            //foreach (var v in values)
-            //{
-            //    tempvtime.Points.AddXY(s[x], v);
-            //    x++;
-            //}
+            Series temperatureseries = new Series("Temperature");
+            temperatureseries.BorderWidth = 2;
+            temperatureseries.Color = Color.Red;
+            temperatureseries.XValueMember = "Time";
+            temperatureseries.YValueMembers = "Temperature";
+            chartRun.Series[0] = temperatureseries;
+            chartRun.Series[0].ChartType = SeriesChartType.Line;
+            chartRun.Series[0].XValueType = ChartValueType.DateTime;
 
-            //Hardware Addresses and other settings
-            var properties = new SystemProperties();
 
+            Series pressureseries = new Series("Pressure");
+            pressureseries.BorderWidth = 2;
+            pressureseries.Color = Color.Blue;
+            pressureseries.XValueMember = "Time";
+            pressureseries.YValueMembers = "Pressure";
+            chartRun.Series.Add(pressureseries);
+            chartRun.Series[1].ChartType = SeriesChartType.Line;
+            chartRun.Series[1].YValueType = ChartValueType.Single;
+            chartRun.Series[1].XValueType = ChartValueType.DateTime;
+            chartRun.Series[1].YAxisType = AxisType.Secondary;
+
+
+            
             //Instanciate the periphrial class and start up the arduino
-            var Periphrials = new Periphrials();
+            var Periphrials = new Periphrials();    
             var driver = Periphrials.InitializeArduinoDriver();
             
             //Dispatcher to accept commands from the various background workers
@@ -90,11 +105,10 @@ namespace AutoStillDotNet
                 {
                     if (Run != true)
                     { break; }
+                    System.Threading.Thread.Sleep(1000);
                     //Check Temperature
                     MainDispatcher.Invoke(new Action(() => { ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
-                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp; }));
-                    System.Threading.Thread.Sleep(250);
-
+                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp + "°C"; }));
 
                     //Check the low level switch -- a value of low means the lower still switch is open
                     MainDispatcher.Invoke(new Action(() => {
@@ -103,7 +117,6 @@ namespace AutoStillDotNet
                         else
                         { StillEmpty = false; }
                     }));
-                    System.Threading.Thread.Sleep(250);
 
                     //Check the high level switch -- a value of high means the upper still switch is closed
                     MainDispatcher.Invoke(new Action(() => {
@@ -112,11 +125,19 @@ namespace AutoStillDotNet
                         else
                         { StillFull = false; }
                     }));
-                    System.Threading.Thread.Sleep(250);
 
-                    //Check the pressure
+                    //Check the recieving vessel high level switch -- a value of high means the upper rv switch is closed
+                    MainDispatcher.Invoke(new Action(() => {
+                        if (driver.Send(new DigitalReadRequest(properties.RVFullSwitch)).PinValue.ToString() == "Low")
+                        { StillEmpty = true; }
+                        else
+                        { StillEmpty = false; }
+                    }));
+                    
+                    //Check the pressure (1024 is the resolution of the ADC on the arduino, 41.5 is the pressure range in PSI that the sensor is capable of reading, the -15 makes sure that STP = 0 PSI)
+                    MainDispatcher.Invoke(new Action(() => { Pressure = Math.Round((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString()) / 1024) * 41.5) - 15) * ((properties.Units == "Metric") ? 6.895 : 1), 2).ToString(); }));
+                    MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Pressure + ((properties.Units == "Metric") ? "kPa" : "PSI"); }));
                     MainDispatcher.Invoke(new Action(() => { Pressure = driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString(); }));
-                    MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Pressure; }));
 
                 } while (true);
             });
@@ -138,7 +159,7 @@ namespace AutoStillDotNet
                     { break; }
 
                     //Check to see if the still is full, if not fill it. This ensures there is no product wasted if the previous batch was stopped half way
-                    if (StillFull == false  && Phase == 0)
+                    if (StillFull == false  && Phase < 2)
                     {
                         {
                             //Open the inlet valve and turn the inlet pump on
@@ -169,7 +190,7 @@ namespace AutoStillDotNet
                     }
 
                     //Make sure the first loop was passed and the still didnt magically empty itself
-                    if (Phase == 1 && StillFull == true)
+                    if (Phase < 2 && StillFull == true)
                     {
                         //Turn on the element and vacuum pump
                         driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.Low));
@@ -193,7 +214,8 @@ namespace AutoStillDotNet
                         row["Time"] = DateTime.Now;
                         row["Temperature"] = CurrentTemp;
                         row["TemperatureDelta"] = 0;
-                        row["Pressure"] = Convert.ToInt16(Pressure);
+                        row["Pressure"] = Convert.ToDecimal(Pressure);
+                        row["Phase"] = Phase;
                         StillStats.Rows.Add(row);
 
                         //Get the last written row for collecting temperature rise statistics
@@ -229,9 +251,11 @@ namespace AutoStillDotNet
                             row["Time"] = DateTime.Now;
                             row["Temperature"] = CurrentTemp;
                             row["TemperatureDelta"] = CurrentDelta;
-                            row["Pressure"] = Convert.ToInt16(Pressure);
+                            row["Pressure"] = Convert.ToDecimal(Pressure);
+                            row["Phase"] = Phase;
                             StillStats.Rows.Add(row);
                             LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
+                            MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
                         }
 
                         //Once the first plateau is reached allowing for 2% variance in temperature wait until it ends 
@@ -252,13 +276,16 @@ namespace AutoStillDotNet
                             row["Time"] = DateTime.Now;
                             row["Temperature"] = CurrentTemp;
                             row["TemperatureDelta"] = CurrentDelta;
-                            row["Pressure"] = Convert.ToInt16(Pressure);
+                            row["Pressure"] = Convert.ToDecimal(Pressure);
+                            row["Phase"] = Phase;
                             StillStats.Rows.Add(row);
                             LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
+                            MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
                         }
-                        
+
                         //Batch complete!
-                        driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High));
+                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Batch Complete, Saving Run Data..."; }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High)); }));
                         ElementOn = false;
                         Phase = 2;
                     }
@@ -269,6 +296,27 @@ namespace AutoStillDotNet
                     {
                         Statistics.CreateHeader(RunStart, DateTime.Now, true);
                         Statistics.SaveRun(StillStats, RunStart);
+
+                        PressureRegulator.CancelAsync(); //Turn off the vacuum pump synchronously with the main thread
+                        while (PressureRegulator.IsBusy == true || PressureRegulator.CancellationPending == true)
+                        { System.Threading.Thread.Sleep(100); }
+
+
+                        //Drain the Recieving vessel into a storage tank so the next run can begin
+                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Still and Distillate"; }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low)); }));
+                        System.Threading.Thread.Sleep(3000);
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.Low)); }));
+                        while (RVEmpty == false)
+                        {
+                            MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue.ToString() == "High") ? true : false; }));
+                            System.Threading.Thread.Sleep(1000);
+                        }
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High)); }));
+
+
+
+
                         Phase = 0;
                     }
                 } while (true);
@@ -285,7 +333,7 @@ namespace AutoStillDotNet
                     MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
                     VacuumPumpOn = false;
 
-                    if (Run != true)
+                    if (Run != true || PressureRegulator.CancellationPending == true)
                     { break; }
 
                     System.Threading.Thread.Sleep(1000);
@@ -300,7 +348,7 @@ namespace AutoStillDotNet
                         {
                             System.Threading.Thread.Sleep(1000);
                         }
-                        while (Convert.ToDouble(Pressure) > (properties.TargetPressure - properties.TgtPresHysteresisBuffer));
+                        while (Convert.ToDouble(Pressure) > (properties.TargetPressure - properties.TgtPresHysteresisBuffer) && PressureRegulator.CancellationPending == false);
 
                         //Once the pressure has reached its target turn the pump off
                         MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
@@ -314,9 +362,7 @@ namespace AutoStillDotNet
             StillMonitor.RunWorkerAsync();
             System.Threading.Thread.Sleep(2000);
             StillController.RunWorkerAsync();
-            
 
-       
         }
         private void Main_Load(object sender, EventArgs e)
         {

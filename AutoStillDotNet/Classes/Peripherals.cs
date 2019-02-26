@@ -1,8 +1,8 @@
 ﻿using ArduinoDriver;
 using ArduinoDriver.SerialProtocol;
 using ArduinoUploader.Hardware;
-using System;
-using System.Data;
+using System.IO.Ports;
+using System.Management;
 
 namespace AutoStillDotNet
 {
@@ -13,7 +13,34 @@ namespace AutoStillDotNet
 
             //Declare the arduino itself
             var properties = new SystemProperties();
-            var driver = new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, "COM7", true);
+            string ArduinoPort = "";
+
+
+            ManagementScope connectionScope = new ManagementScope();
+            SelectQuery serialQuery = new SelectQuery("SELECT * FROM Win32_SerialPort");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(connectionScope, serialQuery);
+
+            try
+            {
+                foreach (ManagementObject item in searcher.Get())
+                {
+                    string desc = item["Description"].ToString();
+                    string deviceId = item["DeviceID"].ToString();
+
+                    if (desc.Contains("Arduino"))
+                    {
+                        ArduinoPort = deviceId;
+                        break;
+                    }
+                }
+            }
+            catch (ManagementException e)
+            {
+                /* Do Nothing */
+                //Put code here to select the arduino manually
+            }
+
+            var driver = new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoPort, true);
 
             //Digial inputs
             driver.Send(new PinModeRequest(properties.FVEmptySwtich, PinMode.Input));
@@ -56,8 +83,10 @@ namespace AutoStillDotNet
 
             driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High));
             driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High));
-            driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.High));
+            driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low));
             driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High));
+            driver.Send(new DigitalWriteRequest(properties.StillDrainValve, DigitalValue.High));
+
 
 
 

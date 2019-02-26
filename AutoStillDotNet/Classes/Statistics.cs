@@ -44,10 +44,9 @@ namespace AutoStillDotNet
             column.Unique = false;
 
             StillStats.Columns.Add(column);
-            
             column = new DataColumn();
             column.ColumnName = "Pressure";
-            column.DataType = System.Type.GetType("System.Int32");
+            column.DataType = System.Type.GetType("System.Decimal");
             column.ReadOnly = false;
             column.Unique = false;
 

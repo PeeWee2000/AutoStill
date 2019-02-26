@@ -5,17 +5,44 @@ namespace AutoStillDotNet
 {
     class SystemProperties
     {
+
+        ////ACTUAL VALUES
+        ////Digital IO Pins
+        //private byte fvemptyswitch = 1;
+        //private byte fvcompleteswitch = 1;
+        //private byte stillfluidpump = 30;
+        //private byte stillfillvalve = 7 + 21;
+        //private byte stilllowswitch = 49;
+        //private byte stillhighswitch = 51;
+        //private byte stillelement = 1;
+        //private byte stilldrainvalve = 1;
+        //private byte rvfluidpump = 1;
+        //private byte rvdrainvalve = 1;
+        //private byte rvfullswitch = 1;
+        //private byte vacuumpump = 6 + 21;
+        //private byte fanset1 = 1;
+        //private byte fanset2 = 1;
+        //private byte fancontroller1 = 1;
+        //private byte fancontroller2 = 1;
+
+        ////Analog IO Pins
+        //private byte sensorpressure = 55;
+        //private byte sensorcolumntemp = 54;
+
+        //DEV VALUES
         //Digital IO Pins
-        private byte fvemptyswitch = 1;
-        private byte fvcompleteswitch = 1;
-        private byte stillfluidpump = 30;
-        private byte stillfillvalve = 28;
-        private byte stilllowswitch = 49;
-        private byte stillhighswitch = 51;
-        private byte stillelement = 1;
-        private byte stilldrainvalve = 1;
-        private byte rvfluidpump = 32;
-        private byte rvdrainvalve = 31;
+        private byte fvemptyswitch = 50;
+        private byte fvcompleteswitch = 51;
+        private byte stillfluidpump = 22;
+        private byte stillfillvalve = 23;
+        private byte stilllowswitch = 52;
+        private byte stillhighswitch = 53;
+        private byte stillelement = 27;
+        private byte stilldrainvalve = 26;
+        private byte rvfluidpump = 24;
+        private byte rvdrainvalve = 26;
+        private byte rvfullswitch = 1;
+        private byte rvemptyswitch = 1;
         private byte vacuumpump = 27;
         private byte fanset1 = 1;
         private byte fanset2 = 1;
@@ -27,9 +54,12 @@ namespace AutoStillDotNet
         private byte sensorcolumntemp = 54;
 
         //System Targets (I.E. Target Pressure to Maintain)
-        private byte targetpressure = 200; //Target value in raw ADC units
-        private byte tgtpreshysteresisbuffer = 15; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
-        
+        private double targetpressure = 100; //Target value in raw ADC units
+        private double tgtpreshysteresisbuffer = 0.5; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
+
+
+        //System Settings
+        private string units = "Metric";
 
         public byte FVEmptySwtich
         {
@@ -39,10 +69,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     fvemptyswitch = value;
-                }
             }
         }
         public byte FVCompleteSwitch
@@ -53,10 +81,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     fvcompleteswitch = value;
-                }
             }
         }
         public byte StillFluidPump
@@ -67,10 +93,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     stillfluidpump = value;
-                }
             }
         }
         public byte StillFillValve
@@ -81,10 +105,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     stillfillvalve = value;
-                }
             }
         }
         public byte StillLowSwitch
@@ -95,10 +117,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     stilllowswitch = value;
-                }
             }
         }
         public byte StillHighSwitch
@@ -109,10 +129,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     stillhighswitch = value;
-                }
             }
         }
         public byte StillElement
@@ -123,10 +141,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     stillelement = value;
-                }
             }
         }
         public byte StillDrainValve
@@ -137,10 +153,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     stilldrainvalve = value;
-                }
             }
         }
         public byte RVFluidPump
@@ -151,10 +165,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     rvfluidpump = value;
-                }
             }
         }
         public byte RVDrainValve
@@ -165,10 +177,32 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     rvdrainvalve = value;
-                }
+            }
+        }
+        public byte RVFullSwitch
+        {
+            get
+            {
+                return rvfullswitch;
+            }
+            set
+            {
+                
+                    rvfullswitch = value;
+            }
+        }
+        public byte RVEmptySwitch
+        {
+            get
+            {
+                return rvemptyswitch;
+            }
+            set
+            {
+                
+                    rvemptyswitch = value;
             }
         }
         public byte VacuumPump
@@ -179,10 +213,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     vacuumpump = value;
-                }
             }
         }
         public byte FanSet1
@@ -193,10 +225,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     fanset1 = value;
-                }
             }
         }
         public byte FanSet2
@@ -207,10 +237,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     fanset2 = value;
-                }
             }
         }
         public byte FanController1
@@ -221,10 +249,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     fancontroller1 = value;
-                }
             }
         }
         public byte FanController2
@@ -235,10 +261,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     fancontroller2 = value;
-                }
             }
         }
         public byte SensorPressure
@@ -249,10 +273,8 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     sensorpressure = value;
-                }
             }
         }
         public byte SensorColumnTemp
@@ -263,15 +285,13 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     sensorcolumntemp = value;
-                }
             }
         }
 
 
-        public byte TargetPressure
+        public double TargetPressure
         {
             get
             {
@@ -279,13 +299,11 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     targetpressure = value;
-                }
             }
         }
-        public byte TgtPresHysteresisBuffer
+        public double TgtPresHysteresisBuffer
         {
             get
             {
@@ -293,10 +311,20 @@ namespace AutoStillDotNet
             }
             set
             {
-                if ((value > 0) && (value < 13))
-                {
+                
                     tgtpreshysteresisbuffer = value;
-                }
+            }
+        }
+
+        public string Units
+        {
+            get
+            {
+                return units;
+            }
+            set
+            {
+                    units = value;
             }
         }
 
