@@ -108,11 +108,11 @@ namespace AutoStillDotNet
                     System.Threading.Thread.Sleep(1000);
                     //Check Temperature
                     MainDispatcher.Invoke(new Action(() => { ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
-                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp + "°C"; }));
+                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp + ((properties.Units == "Metric") ? "°C": "°F"); }));
 
                     //Check the low level switch -- a value of low means the lower still switch is open
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue.ToString() == "Low")
+                        if (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue == DigitalValue.Low)
                         { StillEmpty = true; }
                         else
                         { StillEmpty = false; }
@@ -120,7 +120,7 @@ namespace AutoStillDotNet
 
                     //Check the high level switch -- a value of high means the upper still switch is closed
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(properties.StillHighSwitch)).PinValue.ToString() == "High")
+                        if (driver.Send(new DigitalReadRequest(properties.StillHighSwitch)).PinValue == DigitalValue.High)
                         { StillFull = true; }
                         else
                         { StillFull = false; }
@@ -128,16 +128,15 @@ namespace AutoStillDotNet
 
                     //Check the recieving vessel high level switch -- a value of high means the upper rv switch is closed
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(properties.RVFullSwitch)).PinValue.ToString() == "Low")
+                        if (driver.Send(new DigitalReadRequest(properties.RVFullSwitch)).PinValue == DigitalValue.Low)
                         { StillEmpty = true; }
                         else
                         { StillEmpty = false; }
                     }));
                     
-                    //Check the pressure (1024 is the resolution of the ADC on the arduino, 41.5 is the pressure range in PSI that the sensor is capable of reading, the -15 makes sure that STP = 0 PSI)
-                    MainDispatcher.Invoke(new Action(() => { Pressure = Math.Round((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString()) / 1024) * 41.5) - 15) * ((properties.Units == "Metric") ? 6.895 : 1), 2).ToString(); }));
+                    //Check the pressure (1024 is the resolution of the ADC on the arduino, 45.1 is the approximate pressure range in PSI that the sensor is capable of reading, the -15 makes sure that STP = 0 PSI/kPa)
+                    MainDispatcher.Invoke(new Action(() => { Pressure = Math.Round((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString()) / 1024) * 45.1) - 15) * ((properties.Units == "Metric") ? 6.895 : 1), 2).ToString(); }));
                     MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Pressure + ((properties.Units == "Metric") ? "kPa" : "PSI"); }));
-                    MainDispatcher.Invoke(new Action(() => { Pressure = driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString(); }));
 
                 } while (true);
             });
@@ -196,7 +195,7 @@ namespace AutoStillDotNet
                         driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.Low));
                         ElementOn = true;
                         PressureRegulator.RunWorkerAsync();
-                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Distilling"; }));
+                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Heating"; }));
 
 
 
@@ -204,9 +203,12 @@ namespace AutoStillDotNet
                         int CurrentTemp = Convert.ToInt16(ColumnTemp);
                         int CurrentDelta = 0;
                         int Counter = 0;
+                        double PlateauTemp = 0;
+                        double StartTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); ;
                         double Temp1 = 0.0;
                         double Temp2 = 0.0;
                         double AverageDelta = 1.0;
+                        double TotalDelta = 0.0;
                        
                         DataRow row;
 
@@ -225,10 +227,13 @@ namespace AutoStillDotNet
                         DataRow Delta1;
                         DataRow Delta2;
 
-                        //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop
-                        while (StillEmpty == false && AverageDelta >= 0.02)
+                        //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop 
+                        //note thate the total delta is there incase it takes longer than 10 minutes to start seeing a temperature rise at the sensor
+                        while ((StillEmpty == false && AverageDelta >= 0.02) || TotalDelta < 0.6)
 
                         {
+                            //Change this back to 10 seconds
+                            System.Threading.Thread.Sleep(250);
                             //Once the element has been on for 10 minutes start checking for the plateau
                             if (Counter < 60)
                             {
@@ -241,10 +246,9 @@ namespace AutoStillDotNet
                                 Temp1 = Delta1.Field<Int32>("Temperature");
                                 Temp2 = Delta2.Field<Int32>("Temperature");
                                 AverageDelta = ((Temp2 - Temp1) / Temp2);
+                                TotalDelta = TotalDelta + AverageDelta;
                             }
-
-                            //Change this back to 10 seconds
-                            System.Threading.Thread.Sleep(250);
+                            
                             CurrentTemp = Convert.ToInt32(ColumnTemp);
                             CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
                             row = StillStats.NewRow();
@@ -258,9 +262,14 @@ namespace AutoStillDotNet
                             MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
                         }
 
-                        //Once the first plateau is reached allowing for 2% variance in temperature wait until it ends 
-                        //Or end the batch if the saftey limit switch is triggered
-                        while (StillEmpty == false && AverageDelta <= 0.02)
+                        //Once the first plateau is reached allowing for a 4 degree change at the most
+                        //or end the batch if the saftey limit switch is triggered also reset the Delta counters so the next step is not skipped
+                        AverageDelta = 0;
+                        TotalDelta = 0;
+                        PlateauTemp = LastRow.Field<Int32>("Temperature");
+
+                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Distilling"; }));
+                        while (StillEmpty == false && (Temp2 - PlateauTemp) < 5)
 
                         {
                             Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
@@ -284,7 +293,7 @@ namespace AutoStillDotNet
                         }
 
                         //Batch complete!
-                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Batch Complete, Saving Run Data..."; }));
+                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Batch Complete, Saving Run Data"; }));
                         MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High)); }));
                         ElementOn = false;
                         Phase = 2;
@@ -294,7 +303,7 @@ namespace AutoStillDotNet
                     //Once the table is succesfully written set the phase back to 0 and start another run
                     if (Phase == 2)
                     {
-                        Statistics.CreateHeader(RunStart, DateTime.Now, true);
+                        Statistics.CreateHeader(RunStart, DateTime.Now, true, properties.Units);
                         Statistics.SaveRun(StillStats, RunStart);
 
                         PressureRegulator.CancelAsync(); //Turn off the vacuum pump synchronously with the main thread
@@ -302,19 +311,19 @@ namespace AutoStillDotNet
                         { System.Threading.Thread.Sleep(100); }
 
 
-                        //Drain the Recieving vessel into a storage tank so the next run can begin
+                        //Make sure that the switches are working then drain the Recieving vessel into a storage tank so the next run can begin
+                        RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.High) ? true : false;
                         MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Still and Distillate"; }));
                         MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low)); }));
                         System.Threading.Thread.Sleep(3000);
                         MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.Low)); }));
                         while (RVEmpty == false)
                         {
-                            MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue.ToString() == "High") ? true : false; }));
+                            MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.High) ? true : false; }));
                             System.Threading.Thread.Sleep(1000);
                         }
                         MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High)); }));
-
-
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.High)); }));
 
 
                         Phase = 0;

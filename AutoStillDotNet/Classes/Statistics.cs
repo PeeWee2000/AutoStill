@@ -74,20 +74,20 @@ namespace AutoStillDotNet
             return StillStats;
             }
 
-        public static void CreateHeader(DateTime RunStart, DateTime RunEnd, bool RunComplete)
+        public static void CreateHeader(DateTime RunStart, DateTime RunEnd, bool RunComplete, string Units)
         {
             DateTime RunDate = RunStart.Date;
             TimeSpan Duration = RunEnd - RunStart;
             int Complete;
             if (RunComplete == true) { Complete = 1; } else { Complete = 0; }
 
-            String Values = ("'"+RunDate.ToShortDateString() + "'" + ", '" + RunStart.ToString() + "'" + ", '" + RunEnd.ToString() + "'" + ", '" + Duration.ToString() + "', " + Complete);
+            String Values = ("'"+RunDate.ToShortDateString() + "'" + ", '" + RunStart.ToString() + "'" + ", '" + RunEnd.ToString() + "'" + ", '" + Duration.ToString() + "', " + Complete + ", '" + Units + "'");
 
             var properties = new SystemProperties();
             SqlConnection sqlConnection = properties.sqlConnection;
             using (var command = new SqlCommand("InsertTable") { CommandType = CommandType.Text })
             {
-                command.CommandText = "insert into RunHeaders (rhDate, rhStart, rhEnd, rhDuration, rhComplete) values ("+ Values +")";
+                command.CommandText = "insert into RunHeaders (rhDate, rhStart, rhEnd, rhDuration, rhComplete, rhUnits) values ("+ Values +")";
                 command.Connection = sqlConnection;
                 sqlConnection.Open();
                 command.ExecuteNonQuery();
