@@ -32,7 +32,7 @@ namespace AutoStillDotNet
         public volatile bool RVValveOpen = false;
         public volatile bool RVFull = true;
         public volatile bool RVEmpty = true;
-        public volatile float RVWeight = Convert.ToSingle(0.0);
+        public volatile float RVWeight = 0;
 
 
         public Main()
@@ -103,7 +103,7 @@ namespace AutoStillDotNet
             {
                 do
                 {
-                    if (Run != true)
+                    if (Run != true && driver != null) //The periphrials class returns null if no arduin is found on any of the com ports
                     { break; }
                     System.Threading.Thread.Sleep(1000);
                     //Check Temperature

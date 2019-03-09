@@ -3,101 +3,72 @@ using ArduinoDriver.SerialProtocol;
 using ArduinoUploader.Hardware;
 using System.IO.Ports;
 using System.Management;
+using System.Configuration;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using System;
 
 namespace AutoStillDotNet
 {
     class Periphrials
     {
-        ArduinoDriver.ArduinoDriver driver = new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
+        //Try to initalize the arduino driver, if no arudino is found return null so the Main loop knows it needs to wait for an arduino to be plugged in
+        ArduinoDriver.ArduinoDriver driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
 
         public ArduinoDriver.ArduinoDriver InitializeArduinoDriver()
         {
-            //Declare the arduino itself
-            var properties = new SystemProperties();
+            if (driver != null)
+            {
+                //Declare the arduino itself
+                var properties = new SystemProperties();
 
-            //Digial inputs
-            driver.Send(new PinModeRequest(properties.FVEmptySwtich, PinMode.Input));
-            driver.Send(new PinModeRequest(properties.FVCompleteSwitch, PinMode.Input));
-            driver.Send(new PinModeRequest(properties.StillLowSwitch, PinMode.Input));
-            driver.Send(new PinModeRequest(properties.StillHighSwitch, PinMode.Input));
+                //Digial inputs
+                driver.Send(new PinModeRequest(properties.FVEmptySwtich, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.FVCompleteSwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.StillLowSwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.StillHighSwitch, PinMode.Input));
 
-            //Digital outputs
-            InitializePin(properties.StillFillValve, PinMode.Output);
-            InitializePin(properties.StillFluidPump, PinMode.Output);
-            InitializePin(properties.StillElement, PinMode.Output);
-            InitializePin(properties.StillFillValve, PinMode.Output);
-            
+                //Digital outputs
+                InitOutputPin(properties.StillFillValve);
+                InitOutputPin(properties.StillFluidPump);
+                InitOutputPin(properties.StillElement);
+                InitOutputPin(properties.StillFillValve);
+                InitOutputPin(properties.StillFluidPump);
+                InitOutputPin(properties.StillDrainValve);
+                InitOutputPin(properties.StillDrainValve);
+                InitOutputPin(properties.RVFluidPump);
+                InitOutputPin(properties.RVDrainValve);
+                InitOutputPin(properties.VacuumPump);
+                InitOutputPin(properties.FanSet1);
+                InitOutputPin(properties.FanSet2);
 
+                //Analog Inputs
+                driver.Send(new PinModeRequest(properties.SensorColumnTemp, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.SensorPressure, PinMode.Input));
 
-            //System.Threading.Thread.Sleep(3000);
-            driver.Send(new PinModeRequest(properties.StillFluidPump, PinMode.Output));
-
-            driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.High));
-            driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High));
-
-
-
-
-            driver.Send(new PinModeRequest(properties.StillElement, PinMode.Output));
-            driver.Send(new PinModeRequest(properties.StillDrainValve, PinMode.Output));
-            driver.Send(new PinModeRequest(properties.RVFluidPump, PinMode.Output));
-            driver.Send(new PinModeRequest(properties.RVDrainValve, PinMode.Output));
-            driver.Send(new PinModeRequest(properties.VacuumPump, PinMode.Output));
-            driver.Send(new PinModeRequest(properties.FanSet1, PinMode.Output));
-            driver.Send(new PinModeRequest(properties.FanSet2, PinMode.Output));
-
-            //Analog Inputs
-            driver.Send(new PinModeRequest(properties.SensorColumnTemp, PinMode.Input));
-            driver.Send(new PinModeRequest(properties.SensorPressure, PinMode.Input));
-
-            //Analog Outputs
-            driver.Send(new PinModeRequest(properties.FanController1, PinMode.Output));
-            driver.Send(new PinModeRequest(properties.FanController2, PinMode.Output));
+                //Analog Outputs
+                InitOutputPin(properties.FanController1);
+                InitOutputPin(properties.FanController2);
+            }
 
 
-
-            //Set all the starting values to 0 since the stupid relay board is jank
-
-            driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High));
-            driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High));
-            driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low));
-            driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High));
-            driver.Send(new DigitalWriteRequest(properties.StillDrainValve, DigitalValue.High));
-
-
-
-
-            //Send the initialized driver object back to whatever called this sub
+            //Send the initialized driver object (or null) back to whatever called this sub
             return driver;
         }
-        private void InitializePin(byte Pin, PinMode pinMode)
+        private void InitOutputPin(byte Pin)
         {
-            driver.Send(new PinModeRequest(Pin, pinMode));
-            if (pinMode == PinMode.Output)
-            {
+            driver.Send(new PinModeRequest(Pin, PinMode.Output));
+            if (ConfigurationManager.AppSettings.Get("InvertPinPolarity") == "true") //The V1.0 relay board is retarded and uses Low == On
+            {                                                                        //so this is necessary in order to start up with everything off
                 driver.Send(new DigitalWriteRequest(Pin, DigitalValue.High));
             }
-        }
-        private void InitializePin(ArduinoDriver.ArduinoDriver Driver, byte Pin, PinMode pinMode)
-        {
-            Driver.Send(new PinModeRequest(Pin, pinMode));
-            if (pinMode == PinMode.Output)
-            { 
-                Driver.Send(new DigitalWriteRequest(Pin, DigitalValue.High));
-            }
-        }
-        private void InitializePin(ArduinoDriver.ArduinoDriver Driver, byte Pin, PinMode pinMode, DigitalValue digitalValue)
-        {
-            Driver.Send(new PinModeRequest(Pin, pinMode));
-            Driver.Send(new DigitalWriteRequest(Pin, digitalValue));
         }
 
         private static string ArduinoCOMPort()
         {
 
-            string ArduinoPort = "";
-
-
+            List<string> ArduinoPort = new List<string>();
+            int ArduinosFound = 0;
             ManagementScope connectionScope = new ManagementScope();
             SelectQuery serialQuery = new SelectQuery("SELECT * FROM Win32_SerialPort");
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(connectionScope, serialQuery); //These 3 lines query device manager for all active serial connections
@@ -111,16 +82,34 @@ namespace AutoStillDotNet
 
                     if (desc.Contains("Arduino"))
                     {
-                        ArduinoPort = deviceId;
-                        break;
+                        try
+                        {
+                            SerialPort inuse = new SerialPort(deviceId);
+                            inuse.Open();
+                            inuse.Close();
+                            ArduinosFound++;
+                            ArduinoPort.Add(deviceId);
+                        }
+                        catch (UnauthorizedAccessException ex)
+                        { } //If the above lines error out it means the arduino is already in use and should not be added to the list
                     }
                 }
             }
-            catch (ManagementException e)
+            catch 
             {
-                //Put code here to select the arduino manually
             }
-            return ArduinoPort;
+            if (ArduinosFound == 1)
+            { return ArduinoPort[0]; }
+            else if (ArduinosFound >= 1)
+            {
+                MessageBox.Show("Multiple Arduinos found, please choose the correct one");
+                //Add code here to select the correct arduino
+                return null;
+            }
+            else
+            { MessageBox.Show("No arduino found please verify that it is plugged in");
+              return null;
+            }
         }
 
     }
