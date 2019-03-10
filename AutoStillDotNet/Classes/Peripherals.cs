@@ -13,7 +13,7 @@ namespace AutoStillDotNet
     class Periphrials
     {
         //Try to initalize the arduino driver, if no arudino is found return null so the Main loop knows it needs to wait for an arduino to be plugged in
-        ArduinoDriver.ArduinoDriver driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
+        private readonly ArduinoDriver.ArduinoDriver driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
 
         public ArduinoDriver.ArduinoDriver InitializeArduinoDriver()
         {
@@ -27,6 +27,8 @@ namespace AutoStillDotNet
                 driver.Send(new PinModeRequest(properties.FVCompleteSwitch, PinMode.Input));
                 driver.Send(new PinModeRequest(properties.StillLowSwitch, PinMode.Input));
                 driver.Send(new PinModeRequest(properties.StillHighSwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.RVEmptySwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.RVFullSwitch, PinMode.Input));
 
                 //Digital outputs
                 InitOutputPin(properties.StillFillValve);

@@ -59,7 +59,7 @@ namespace AutoStillDotNet
         private byte sensorcolumntemp = 54;
 
         //System Targets (I.E. Target Pressure to Maintain)
-        private double targetpressure = 100; //Target value in raw ADC units
+        private double targetpressure = -10; //Target value in metric or imperial
         private double tgtpreshysteresisbuffer = 0.5; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
 
 

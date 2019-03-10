@@ -31,22 +31,20 @@ namespace AutoStillDotNet
         public volatile bool RVPumpOn = false;
         public volatile bool RVValveOpen = false;
         public volatile bool RVFull = true;
-        public volatile bool RVEmpty = true;
+        public volatile bool RVEmpty = false;
         public volatile float RVWeight = 0;
 
 
         public Main()
         {
             InitializeComponent();
-            lblStatus.Text = "Initializing";
-            //Hardware Addresses and other settings
+            StillLoop();
+        }
+        private void Main_Load(object sender, EventArgs e)
+        {
+            //This section sets up the Chart
+
             var properties = new SystemProperties();
-
-            //Datatable for statistics and calculating when to turn the element off
-            DataTable StillStats = Statistics.InitializeTable();
-
-            chartRun.DataSource = StillStats;
-
             ChartArea chartArea = new ChartArea();
             chartRun.ChartAreas[0].Axes[0].MajorGrid.Enabled = false;//x axis
             chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "####0°" + ((properties.Units == "Metric") ? "C" : "F"); //Set the Y axis to use up to 4 digits and if there is no digit set a 0 then tack a degree and a "C" on the end -- documentation available here https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings 
@@ -60,7 +58,7 @@ namespace AutoStillDotNet
             chartRun.ChartAreas[0].AxisY2.LabelStyle.Format = "###0.0##" + ((properties.Units == "Metric") ? "kPa" : "PSI");
             chartRun.ChartAreas[0].AxisY2.IntervalAutoMode = IntervalAutoMode.FixedCount;
             //chartRun.ChartAreas[0].AxisY2.IntervalType = System.Windows.Forms.DataVisualization.Charting.IntervalType.Number;
-            
+
 
 
             Series temperatureseries = new Series("Temperature");
@@ -84,12 +82,36 @@ namespace AutoStillDotNet
             chartRun.Series[1].XValueType = ChartValueType.DateTime;
             chartRun.Series[1].YAxisType = AxisType.Secondary;
 
+        }
 
-            
+        public void StillLoop()
+        {
+            //Hardware Addresses and other settings
+            var properties = new SystemProperties();
+
+            //Datatable for statistics and calculating when to turn the element off
+            DataTable StillStats = Statistics.InitializeTable();
+
+            chartRun.DataSource = StillStats;
+
+       
+
+
             //Instanciate the periphrial class and start up the arduino
-            var Periphrials = new Periphrials();    
+            var Periphrials = new Periphrials();
             var driver = Periphrials.InitializeArduinoDriver();
-            
+
+            if (driver == null)
+            {
+                lblStatus.Text = "No controller found";
+                btnRescan.Visible = true;
+            }
+            else
+            {
+                btnRescan.Visible = false;
+                lblStatus.Text = "Starting";
+            }
+
             //Dispatcher to accept commands from the various background workers
             Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
 
@@ -103,16 +125,16 @@ namespace AutoStillDotNet
             {
                 do
                 {
-                    if (Run != true && driver != null) //The periphrials class returns null if no arduin is found on any of the com ports
+                    if (Run != true || driver == null) //The periphrials class returns null if no arduin is found on any of the com ports
                     { break; }
                     System.Threading.Thread.Sleep(1000);
                     //Check Temperature
                     MainDispatcher.Invoke(new Action(() => { ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
-                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp + ((properties.Units == "Metric") ? "°C": "°F"); }));
+                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp + ((properties.Units == "Metric") ? "°C" : "°F"); }));
 
                     //Check the low level switch -- a value of low means the lower still switch is open
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue == DigitalValue.Low)
+                        if (driver.Send(new DigitalReadRequest(properties.StillLowSwitch)).PinValue == DigitalValue.High)
                         { StillEmpty = true; }
                         else
                         { StillEmpty = false; }
@@ -120,29 +142,36 @@ namespace AutoStillDotNet
 
                     //Check the high level switch -- a value of high means the upper still switch is closed
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(properties.StillHighSwitch)).PinValue == DigitalValue.High)
+                        if (driver.Send(new DigitalReadRequest(properties.StillHighSwitch)).PinValue == DigitalValue.Low)
                         { StillFull = true; }
                         else
                         { StillFull = false; }
                     }));
 
+                    //Check the recieving vessel low level switch -- a value of high means the upper rv switch is closed
+                    MainDispatcher.Invoke(new Action(() => {
+                        if (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.High)
+                        { RVEmpty = true; }
+                        else
+                        { RVEmpty = false; }
+
+                    }));
+
                     //Check the recieving vessel high level switch -- a value of high means the upper rv switch is closed
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(properties.RVFullSwitch)).PinValue == DigitalValue.Low)
-                        { StillEmpty = true; }
+                        if (driver.Send(new DigitalReadRequest(properties.RVFullSwitch)).PinValue == DigitalValue.High)
+                        { RVFull = true; }
                         else
-                        { StillEmpty = false; }
+                        { RVFull = false; }
+
                     }));
-                    
+
                     //Check the pressure (1024 is the resolution of the ADC on the arduino, 45.1 is the approximate pressure range in PSI that the sensor is capable of reading, the -15 makes sure that STP = 0 PSI/kPa)
                     MainDispatcher.Invoke(new Action(() => { Pressure = Math.Round((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorPressure)).PinValue.ToString()) / 1024) * 45.1) - 15) * ((properties.Units == "Metric") ? 6.895 : 1), 2).ToString(); }));
                     MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Pressure + ((properties.Units == "Metric") ? "kPa" : "PSI"); }));
 
                 } while (true);
             });
-
-       
-
 
             StillController = new BackgroundWorker();
             StillController.WorkerSupportsCancellation = true;
@@ -152,33 +181,33 @@ namespace AutoStillDotNet
                 do
                 {
                     DateTime RunStart = DateTime.Now;
-
+                    StillStats.Clear();
                     //Run unless a stop condition is hit
-                    if (Run != true)
+                    if (Run != true || driver == null)
                     { break; }
 
                     //Check to see if the still is full, if not fill it. This ensures there is no product wasted if the previous batch was stopped half way
-                    if (StillFull == false  && Phase < 2)
+                    if (StillFull == false && Phase < 2)
                     {
                         {
                             //Open the inlet valve and turn the inlet pump on
-                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.Low)); }));
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High)); }));
                             StillValveOpen = true;
                             //Wait 5 seconds for the valve to open
                             System.Threading.Thread.Sleep(5000);
-                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.Low)); }));
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.High)); }));
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Still"; }));
                             StillPumpOn = true;
-                                                        
+
                             //Check once a second to see if the still is full now -- note that StillFull is updated by the monitor worker
                             while (StillFull == false)
                             {
                                 System.Threading.Thread.Sleep(1000);
                             }
                             //Close the valve and turn off the pump
-                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High)); }));
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.Low)); }));
                             StillValveOpen = false;
-                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.High)); }));
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.Low)); }));
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Complete"; }));
 
                             StillPumpOn = false;
@@ -192,7 +221,7 @@ namespace AutoStillDotNet
                     if (Phase < 2 && StillFull == true)
                     {
                         //Turn on the element and vacuum pump
-                        driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.Low));
+                        driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High));
                         ElementOn = true;
                         PressureRegulator.RunWorkerAsync();
                         MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Heating"; }));
@@ -204,12 +233,17 @@ namespace AutoStillDotNet
                         int CurrentDelta = 0;
                         int Counter = 0;
                         double PlateauTemp = 0;
-                        double StartTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); ;
+                        string StartTempRaw = null;
+                        while (StartTempRaw == null)
+                        {
+                            try { StartTempRaw = driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString(); } catch { }
+                        }
+                        double StartTemp = Convert.ToInt64((((Convert.ToDouble(StartTempRaw) * (5.0 / 1023.0)) - 1.25) / 0.005));
                         double Temp1 = 0.0;
                         double Temp2 = 0.0;
                         double AverageDelta = 1.0;
                         double TotalDelta = 0.0;
-                       
+
                         DataRow row;
 
                         row = StillStats.NewRow();
@@ -248,7 +282,7 @@ namespace AutoStillDotNet
                                 AverageDelta = ((Temp2 - Temp1) / Temp2);
                                 TotalDelta = TotalDelta + AverageDelta;
                             }
-                            
+
                             CurrentTemp = Convert.ToInt32(ColumnTemp);
                             CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
                             row = StillStats.NewRow();
@@ -269,7 +303,7 @@ namespace AutoStillDotNet
                         PlateauTemp = LastRow.Field<Int32>("Temperature");
 
                         MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Distilling"; }));
-                        while (StillEmpty == false && (Temp2 - PlateauTemp) < 5)
+                        while (StillEmpty == false && (Temp2 - PlateauTemp) < 5 && RVFull == false)
 
                         {
                             Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
@@ -294,7 +328,7 @@ namespace AutoStillDotNet
 
                         //Batch complete!
                         MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Batch Complete, Saving Run Data"; }));
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.High)); }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.Low)); }));
                         ElementOn = false;
                         Phase = 2;
                     }
@@ -312,18 +346,18 @@ namespace AutoStillDotNet
 
 
                         //Make sure that the switches are working then drain the Recieving vessel into a storage tank so the next run can begin
-                        RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.High) ? true : false;
+                        RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false;
                         MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Still and Distillate"; }));
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low)); }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.High)); }));
                         System.Threading.Thread.Sleep(3000);
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.Low)); }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High)); }));
                         while (RVEmpty == false)
                         {
-                            MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.High) ? true : false; }));
-                            System.Threading.Thread.Sleep(1000);
+                            //MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false; }));
+                            System.Threading.Thread.Sleep(1500);
                         }
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High)); }));
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.High)); }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.Low)); }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low)); }));
 
 
                         Phase = 0;
@@ -336,12 +370,11 @@ namespace AutoStillDotNet
             PressureRegulator.WorkerSupportsCancellation = true;
             PressureRegulator.DoWork += new DoWorkEventHandler((state, args) =>
             {
+                //Make sure the pump is off
+                MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.Low)); }));
+                VacuumPumpOn = false;
                 do
                 {
-                    //Make sure the pump is off
-                    MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
-                    VacuumPumpOn = false;
-
                     if (Run != true || PressureRegulator.CancellationPending == true)
                     { break; }
 
@@ -349,7 +382,7 @@ namespace AutoStillDotNet
                     if (Convert.ToDouble(Pressure) > properties.TargetPressure)
                     {
                         //Turn the vacuum pump on
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.Low)); }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
                         VacuumPumpOn = true;
 
                         //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
@@ -360,7 +393,7 @@ namespace AutoStillDotNet
                         while (Convert.ToDouble(Pressure) > (properties.TargetPressure - properties.TgtPresHysteresisBuffer) && PressureRegulator.CancellationPending == false);
 
                         //Once the pressure has reached its target turn the pump off
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
+                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.Low)); }));
                         VacuumPumpOn = false;
 
                     }
@@ -371,11 +404,11 @@ namespace AutoStillDotNet
             StillMonitor.RunWorkerAsync();
             System.Threading.Thread.Sleep(2000);
             StillController.RunWorkerAsync();
-
         }
-        private void Main_Load(object sender, EventArgs e)
-        {
 
+        private void btnScan_Click(object sender, EventArgs e)
+        {
+            StillLoop();
         }
     }
 }
