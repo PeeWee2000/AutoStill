@@ -99,7 +99,7 @@ namespace AutoStillDotNet
 
             //Instanciate the periphrial class and start up the arduino
             var Periphrials = new Periphrials();
-            var driver = Periphrials.InitializeArduinoDriver();
+            ArduinoDriver.ArduinoDriver driver = Periphrials.InitializeArduinoDriver();
 
             if (driver == null)
             {
@@ -194,7 +194,7 @@ namespace AutoStillDotNet
                             MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFillValve, DigitalValue.High)); }));
                             StillValveOpen = true;
                             //Wait 5 seconds for the valve to open
-                            System.Threading.Thread.Sleep(5000);
+                            System.Threading.Thread.Sleep(3000);
                             MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillFluidPump, DigitalValue.High)); }));
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Still"; }));
                             StillPumpOn = true;

@@ -34,9 +34,6 @@ namespace AutoStillDotNet
                 InitOutputPin(properties.StillFillValve);
                 InitOutputPin(properties.StillFluidPump);
                 InitOutputPin(properties.StillElement);
-                InitOutputPin(properties.StillFillValve);
-                InitOutputPin(properties.StillFluidPump);
-                InitOutputPin(properties.StillDrainValve);
                 InitOutputPin(properties.StillDrainValve);
                 InitOutputPin(properties.RVFluidPump);
                 InitOutputPin(properties.RVDrainValve);
