@@ -114,11 +114,21 @@ namespace AutoStillDotNet
                 HeaderID = Convert.ToInt32(command.ExecuteScalar());
             }
 
+
             //Command to save the table using stored procedure InsertRunRecord
             using (var command = new SqlCommand("InsertRunRecord") { CommandType = CommandType.StoredProcedure })
             {
                 command.Parameters.Add(new SqlParameter("@runrecordtype", RunData));
                 command.Parameters.Add(new SqlParameter("@RHID", HeaderID));
+                command.Connection = sqlConnection;
+                command.ExecuteNonQuery();
+            }
+
+            //Command to calculate averages that are on the header records from data contained in the run records
+            using (var command = new SqlCommand())
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "CalculateAverages";
                 command.Connection = sqlConnection;
                 command.ExecuteNonQuery();
             }

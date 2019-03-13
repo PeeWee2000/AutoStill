@@ -129,7 +129,16 @@ namespace AutoStillDotNet
                     { break; }
                     System.Threading.Thread.Sleep(1000);
                     //Check Temperature
-                    MainDispatcher.Invoke(new Action(() => { ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
+                    bool success = false;
+                    while (success == false)
+                    {
+                        try
+                        {
+                            MainDispatcher.Invoke(new Action(() => { ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
+                            success = true;
+                        }
+                        catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
+                    }
                     MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = ColumnTemp + ((properties.Units == "Metric") ? "°C" : "°F"); }));
 
                     //Check the low level switch -- a value of low means the lower still switch is open
@@ -180,6 +189,7 @@ namespace AutoStillDotNet
             {
                 do
                 {
+                    try {                     
                     DateTime RunStart = DateTime.Now;
                     StillStats.Clear();
                     //Run unless a stop condition is hit
@@ -333,35 +343,56 @@ namespace AutoStillDotNet
                         ElementOn = false;
                         Phase = 3;
                     }
-                    //If the run completed without issue then calculate the header info and write the data to a local sqldb
-                    //Note that this must be done sequentially as the records must relate to a header record
-                    //Once the table is succesfully written set the phase back to 0 and start another run
-                    if (Phase == 3)
-                    {
-                        Statistics.CreateHeader(RunStart, DateTime.Now, true, properties.Units);
-                        Statistics.SaveRun(StillStats, RunStart);
-
-                        PressureRegulator.CancelAsync(); //Turn off the vacuum pump synchronously with the main thread
-                        while (PressureRegulator.IsBusy == true || PressureRegulator.CancellationPending == true)
-                        { System.Threading.Thread.Sleep(100); }
-
-
-                        //Make sure that the switches are working then drain the Recieving vessel into a storage tank so the next run can begin
-                        RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false;
-                        MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Still and Distillate"; }));
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.High)); }));
-                        System.Threading.Thread.Sleep(3000);
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High)); }));
-                        while (RVEmpty == false)
+                        //If the run completed without issue then calculate the header info and write the data to a local sqldb
+                        //Note that this must be done sequentially as the records must relate to a header record
+                        //Once the table is succesfully written set the phase back to 0 and start another run
+                        if (Phase == 3)
                         {
-                            //MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false; }));
-                            System.Threading.Thread.Sleep(1500);
+                            Statistics.CreateHeader(RunStart, DateTime.Now, true, properties.Units);
+                            Statistics.SaveRun(StillStats, RunStart);
+
+                            PressureRegulator.CancelAsync(); //Turn off the vacuum pump synchronously with the main thread
+                            while (PressureRegulator.IsBusy == true || PressureRegulator.CancellationPending == true)
+                            { System.Threading.Thread.Sleep(100); }
+
+
+                            //Fill the system with air so it is at a neutral pressure before pumping any fluids -- note that the system will pull air from the drain valve  
+                            //since it eventually vents somewhere that is at atmospheric pressure
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillDrainValve, DigitalValue.High)); }));
+                            MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Still"; }));
+                            while (StillEmpty == false || Convert.ToDouble(Pressure) <= -0.2)
+                            { System.Threading.Thread.Sleep(1500); }
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillDrainValve, DigitalValue.Low)); }));
+                            System.Threading.Thread.Sleep(3000);
+
+
+                            //Make sure that the switches are working then pump the Recieving vessels contents into a storage tank so the next run can begin
+                            MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Distillate"; }));
+                            MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false; }));
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.High)); }));
+                            System.Threading.Thread.Sleep(3000); //3 second delay so the valve has time to open
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.High)); }));
+                            while (RVEmpty == false)
+                            {
+                                //MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(properties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false; }));
+                                System.Threading.Thread.Sleep(1500);
+                            }
+                            //Turn off the pump and shut the valves and give them 3 seconds to close
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.Low)); }));
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low)); }));
+
+
+
+
+                            Phase = 0;
+
                         }
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVFluidPump, DigitalValue.Low)); }));
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.RVDrainValve, DigitalValue.Low)); }));
-
-
-                        Phase = 0;
+                    }
+                    //The arduino driver reference has a tendency to randomly throw null reference exceptions, for now I will handle it by just restarting the arduino
+                    //the code is designed to pick up where it left off if it errors since the phase is still in memory
+                    catch (NullReferenceException)
+                    {
+                        MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); }));
                     }
                 } while (true);
             });
@@ -376,28 +407,32 @@ namespace AutoStillDotNet
                 VacuumPumpOn = false;
                 do
                 {
-                    if (Run != true || PressureRegulator.CancellationPending == true)
-                    { break; }
-
-                    System.Threading.Thread.Sleep(1000);
-                    if (Convert.ToDouble(Pressure) > properties.TargetPressure)
+                    try
                     {
-                        //Turn the vacuum pump on
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
-                        VacuumPumpOn = true;
+                        if (Run != true || PressureRegulator.CancellationPending == true)
+                        { break; }
 
-                        //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
-                        do
+                        System.Threading.Thread.Sleep(1000);
+                        if (Convert.ToDouble(Pressure) > properties.TargetPressure)
                         {
-                            System.Threading.Thread.Sleep(1000);
+                            //Turn the vacuum pump on
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.High)); }));
+                            VacuumPumpOn = true;
+
+                            //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
+                            do
+                            {
+                                System.Threading.Thread.Sleep(1000);
+                            }
+                            while (Convert.ToDouble(Pressure) > (properties.TargetPressure - properties.TgtPresHysteresisBuffer) && PressureRegulator.CancellationPending == false);
+
+                            //Once the pressure has reached its target turn the pump off
+                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.Low)); }));
+                            VacuumPumpOn = false;
+
                         }
-                        while (Convert.ToDouble(Pressure) > (properties.TargetPressure - properties.TgtPresHysteresisBuffer) && PressureRegulator.CancellationPending == false);
-
-                        //Once the pressure has reached its target turn the pump off
-                        MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.VacuumPump, DigitalValue.Low)); }));
-                        VacuumPumpOn = false;
-
                     }
+                    catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
                 } while (true);
             });
 
@@ -409,7 +444,7 @@ namespace AutoStillDotNet
 
         private void btnScan_Click(object sender, EventArgs e)
         {
-            StillLoop();
+
         }
     }
 }
