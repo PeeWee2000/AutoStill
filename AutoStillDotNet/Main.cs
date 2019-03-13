@@ -298,6 +298,7 @@ namespace AutoStillDotNet
 
                         //Once the first plateau is reached allowing for a 4 degree change at the most
                         //or end the batch if the saftey limit switch is triggered also reset the Delta counters so the next step is not skipped
+                        Phase = 2;
                         AverageDelta = 0;
                         TotalDelta = 0;
                         PlateauTemp = LastRow.Field<Int32>("Temperature");
@@ -330,12 +331,12 @@ namespace AutoStillDotNet
                         MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Batch Complete, Saving Run Data"; }));
                         MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(properties.StillElement, DigitalValue.Low)); }));
                         ElementOn = false;
-                        Phase = 2;
+                        Phase = 3;
                     }
                     //If the run completed without issue then calculate the header info and write the data to a local sqldb
                     //Note that this must be done sequentially as the records must relate to a header record
                     //Once the table is succesfully written set the phase back to 0 and start another run
-                    if (Phase == 2)
+                    if (Phase == 3)
                     {
                         Statistics.CreateHeader(RunStart, DateTime.Now, true, properties.Units);
                         Statistics.SaveRun(StillStats, RunStart);
