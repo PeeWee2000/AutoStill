@@ -101,6 +101,29 @@ namespace AutoStillDotNet
             var Periphrials = new Periphrials();
             ArduinoDriver.ArduinoDriver driver = Periphrials.InitializeArduinoDriver();
 
+            //int Value = 1;
+            //while (true)
+            //{
+            //    while (Value < 250)
+            //    { 
+            //    if (Value < 255)
+            //    { Value = Value + 5; }
+            //    else
+            //    { Value = 1; }
+            //     driver.Send(new AnalogWriteRequest(properties.FanController2, Convert.ToByte(Value)));
+            //    }
+            //    while (Value > 6)
+            //    {
+            //        if (Value > 1)
+            //        { Value = Value - 5; }
+            //        else
+            //        { Value = 1; }
+            //        driver.Send(new AnalogWriteRequest(properties.FanController2, Convert.ToByte(Value)));
+            //    }
+
+
+            //}
+
             if (driver == null)
             {
                 lblStatus.Text = "No controller found";
@@ -209,8 +232,9 @@ namespace AutoStillDotNet
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Still"; }));
                             StillPumpOn = true;
 
-                            //Check once a second to see if the still is full now -- note that StillFull is updated by the monitor worker
-                            while (StillFull == false)
+                            
+                                //Check once a second to see if the still is full now -- note that StillFull is updated by the monitor worker
+                                while (StillFull == false)
                             {
                                 System.Threading.Thread.Sleep(1000);
                             }
