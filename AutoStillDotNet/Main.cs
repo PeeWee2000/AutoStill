@@ -15,6 +15,9 @@ namespace AutoStillDotNet
         private BackgroundWorker PressureRegulator; //Determines when to turn the vaucuum pump on and off
         private BackgroundWorker StillMonitor;  //Reads all the sensors and switches
         private BackgroundWorker StillController; //Turns the element, pumps and valves on and off
+        private BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
+        private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
+
 
         public volatile bool Run = true; //Used to shut down or start the whole process
         public volatile int Phase = 0; //Used to control the main still control background worker and report progress
@@ -22,6 +25,8 @@ namespace AutoStillDotNet
         //Varaiables written to and read by all the various loops -- Assume the still is empty and all periphrials are off when starting up
         public volatile string ColumnTemp; 
         public volatile string Pressure;
+        public volatile string RefluxTemp;
+        public volatile string CondensorTemp;
         public volatile bool StillEmpty = true;
         public volatile bool StillFull = false;
         public volatile bool ElementOn = false;
@@ -101,25 +106,7 @@ namespace AutoStillDotNet
             var Periphrials = new Periphrials();
             ArduinoDriver.ArduinoDriver driver = Periphrials.InitializeArduinoDriver();
 
-            //int Value = 1;
-            //while (true)
-            //{
-            //    while (Value < 250)
-            //    { 
-            //    if (Value < 255)
-            //    { Value = Value + 5; }
-            //    else
-            //    { Value = 1; }
-            //     driver.Send(new AnalogWriteRequest(properties.FanController2, Convert.ToByte(Value)));
-            //    }
-            //    while (Value > 6)
-            //    {
-            //        if (Value > 1)
-            //        { Value = Value - 5; }
-            //        else
-            //        { Value = 1; }
-            //        driver.Send(new AnalogWriteRequest(properties.FanController2, Convert.ToByte(Value)));
-            //    }
+
 
 
             //}
@@ -158,6 +145,8 @@ namespace AutoStillDotNet
                         try
                         {
                             MainDispatcher.Invoke(new Action(() => { ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
+                            MainDispatcher.Invoke(new Action(() => { RefluxTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorCoolantTemp1)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
+                            MainDispatcher.Invoke(new Action(() => { CondensorTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(properties.SensorCoolantTemp2)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
                             success = true;
                         }
                         catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
@@ -286,6 +275,8 @@ namespace AutoStillDotNet
                         row["TemperatureDelta"] = 0;
                         row["Pressure"] = Convert.ToDecimal(Pressure);
                         row["Phase"] = Phase;
+                        row["RefluxTemperature"] = Convert.ToInt16(RefluxTemp);
+                        row["CondensorTemperature"] = Convert.ToInt16(CondensorTemp);
                         StillStats.Rows.Add(row);
 
                         //Get the last written row for collecting temperature rise statistics
@@ -325,7 +316,9 @@ namespace AutoStillDotNet
                             row["TemperatureDelta"] = CurrentDelta;
                             row["Pressure"] = Convert.ToDecimal(Pressure);
                             row["Phase"] = Phase;
-                            StillStats.Rows.Add(row);
+                                row["RefluxTemperature"] = Convert.ToInt16(RefluxTemp);
+                                row["CondensorTemperature"] = Convert.ToInt16(CondensorTemp);
+                                StillStats.Rows.Add(row);
                             LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
                             MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
                         }
@@ -356,6 +349,8 @@ namespace AutoStillDotNet
                             row["TemperatureDelta"] = CurrentDelta;
                             row["Pressure"] = Convert.ToDecimal(Pressure);
                             row["Phase"] = Phase;
+                            row["RefluxTemperature"] = Convert.ToInt16(RefluxTemp);
+                            row["CondensorTemperature"] = Convert.ToInt16(CondensorTemp);
                             StillStats.Rows.Add(row);
                             LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
                             MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
@@ -460,6 +455,63 @@ namespace AutoStillDotNet
                 } while (true);
             });
 
+            //Turns fan set 1 on, off, up and down 
+            FanController1 = new BackgroundWorker();
+            FanController1.WorkerSupportsCancellation = true;
+            FanController1.DoWork += new DoWorkEventHandler((state, args) =>
+            {
+                do
+                {
+                    if (Run != true || FanController1.CancellationPending == true)
+                    { break; }
+                    try
+                    {
+
+                    }
+                    catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
+                } while (true);
+            });
+
+            //Turns fan set 2 on, off, up and down 
+            FanController2 = new BackgroundWorker();
+            FanController2.WorkerSupportsCancellation = true;
+            FanController2.DoWork += new DoWorkEventHandler((state, args) =>
+            {
+                do
+                {
+                    if (Run != true || FanController2.CancellationPending == true)
+                    { break; }
+                    try
+                    {
+                       
+                    }
+                    catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
+                } while (true);
+            });
+
+
+
+            //int Value = 1;
+            //while (true)
+            //{
+            //    while (Value < 250)
+            //    { 
+            //    if (Value < 255)
+            //    { Value = Value + 5; }
+            //    else
+            //    { Value = 1; }
+            //     driver.Send(new AnalogWriteRequest(properties.FanController2, Convert.ToByte(Value)));
+            //    }
+            //    while (Value > 6)
+            //    {
+            //        if (Value > 1)
+            //        { Value = Value - 5; }
+            //        else
+            //        { Value = 1; }
+            //        driver.Send(new AnalogWriteRequest(properties.FanController2, Convert.ToByte(Value)));
+            //    }
+
+
             //Start the workers and pause for 2 seconds to allow for initial values to be collected
             StillMonitor.RunWorkerAsync();
             System.Threading.Thread.Sleep(2000);
@@ -468,7 +520,7 @@ namespace AutoStillDotNet
 
         private void btnScan_Click(object sender, EventArgs e)
         {
-
+            StillLoop();
         }
     }
 }

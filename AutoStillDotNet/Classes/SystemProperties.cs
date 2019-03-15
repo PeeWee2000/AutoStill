@@ -51,6 +51,8 @@ namespace AutoStillDotNet
         private byte fanset2 = GetPin("fanset2");
         private byte fancontroller1 = GetPin("fancontroller1");
         private byte fancontroller2 = GetPin("fancontroller2");
+        private byte sensorcoolanttemp1 = GetPin("sensorcoolanttemp1");
+        private byte sensorcoolanttemp2 = GetPin("sensorcoolanttemp2");
 
 
 
@@ -302,8 +304,30 @@ namespace AutoStillDotNet
                     sensorcolumntemp = value;
             }
         }
+        public byte SensorCoolantTemp1
+        {
+            get
+            {
+                return sensorcoolanttemp1;
+            }
+            set
+            {
 
+                sensorcoolanttemp1 = value;
+            }
+        }
+        public byte SensorCoolantTemp2
+        {
+            get
+            {
+                return sensorcoolanttemp2;
+            }
+            set
+            {
 
+                sensorcoolanttemp2 = value;
+            }
+        }
         public double TargetPressure
         {
             get

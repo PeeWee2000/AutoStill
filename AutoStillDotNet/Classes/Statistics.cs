@@ -36,6 +36,7 @@ namespace AutoStillDotNet
             column.Unique = false;
 
             StillStats.Columns.Add(column);
+
             
             column = new DataColumn();
         column.ColumnName = "TemperatureDelta";
@@ -62,6 +63,22 @@ namespace AutoStillDotNet
 
             column = new DataColumn();
             column.ColumnName = "Amperage";
+            column.DataType = System.Type.GetType("System.Int32");
+            column.ReadOnly = false;
+            column.Unique = false;
+
+            StillStats.Columns.Add(column);
+
+            column = new DataColumn();
+            column.ColumnName = "RefluxTemperature";
+            column.DataType = System.Type.GetType("System.Int32");
+            column.ReadOnly = false;
+            column.Unique = false;
+
+            StillStats.Columns.Add(column);
+
+            column = new DataColumn();
+            column.ColumnName = "CondensorTemperature";
             column.DataType = System.Type.GetType("System.Int32");
             column.ReadOnly = false;
             column.Unique = false;

@@ -44,6 +44,8 @@ namespace AutoStillDotNet
                 //Analog Inputs
                 driver.Send(new PinModeRequest(properties.SensorColumnTemp, PinMode.Input));
                 driver.Send(new PinModeRequest(properties.SensorPressure, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.SensorCoolantTemp1, PinMode.Input));
+                driver.Send(new PinModeRequest(properties.SensorCoolantTemp2, PinMode.Input));
 
                 //Analog Outputs
                 InitOutputPin(properties.FanController1);
