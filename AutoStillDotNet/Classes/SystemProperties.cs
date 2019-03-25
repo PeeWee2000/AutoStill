@@ -5,68 +5,68 @@ using System.Windows.Forms;
 
 namespace AutoStillDotNet
 {
-    class SystemProperties
+    public static class SystemProperties
     {
 
         ////ACTUAL VALUES
         ////Digital IO Pins
-        //private byte fvemptyswitch = 1;
-        //private byte fvcompleteswitch = 1;
-        //private byte stillfluidpump = 30;
-        //private byte stillfillvalve = 7 + 21;
-        //private byte stilllowswitch = 49;
-        //private byte stillhighswitch = 51;
-        //private byte stillelement = 1;
-        //private byte stilldrainvalve = 1;
-        //private byte rvfluidpump = 1;
-        //private byte rvdrainvalve = 1;
-        //private byte rvfullswitch = 1;
-        //private byte vacuumpump = 6 + 21;
-        //private byte fanset1 = 1;
-        //private byte fanset2 = 1;
-        //private byte fancontroller1 = 1;
-        //private byte fancontroller2 = 1;
+        //private static byte fvemptyswitch = 1;
+        //private static byte fvcompleteswitch = 1;
+        //private static byte stillfluidpump = 30;
+        //private static byte stillfillvalve = 7 + 21;
+        //private static byte stilllowswitch = 49;
+        //private static byte stillhighswitch = 51;
+        //private static byte stillelement = 1;
+        //private static byte stilldrainvalve = 1;
+        //private static byte rvfluidpump = 1;
+        //private static byte rvdrainvalve = 1;
+        //private static byte rvfullswitch = 1;
+        //private static byte vacuumpump = 6 + 21;
+        //private static byte fanset1 = 1;
+        //private static byte fanset2 = 1;
+        //private static byte fancontroller1 = 1;
+        //private static byte fancontroller2 = 1;
 
         ////Analog IO Pins
-        //private byte sensorpressure = 55;
-        //private byte sensorcolumntemp = 54;
+        //private static byte sensorpressure = 55;
+        //private static byte sensorcolumntemp = 54;
 
         //DEV VALUES
         //Digital IO Pins
         //private string test = ConfigurationManager.AppSettings.Get("fvemptyswitch");
-        private byte fvemptyswitch = GetPin("fvemptyswitch");
-        private byte fvcompleteswitch = GetPin("fvcompleteswitch");
-        private byte stillfluidpump = GetPin("stillfluidpump");
-        private byte stillfillvalve = GetPin("stillfillvalve");
-        private byte stilllowswitch = GetPin("stilllowswitch");
-        private byte stillhighswitch = GetPin("stillhighswitch");
-        private byte stillelement = GetPin("stillelement");
-        private byte stilldrainvalve = GetPin("stilldrainvalve");
-        private byte rvfluidpump = GetPin("rvfluidpump");
-        private byte rvdrainvalve = GetPin("rvdrainvalve");
-        private byte rvfullswitch = GetPin("rvfullswitch");
-        private byte rvemptyswitch = GetPin("rvemptyswitch");
-        private byte vacuumpump = GetPin("vacuumpump");
-        private byte fanset1 = GetPin("fanset1");
-        private byte fanset2 = GetPin("fanset2");
-        private byte fancontroller1 = GetPin("fancontroller1");
-        private byte fancontroller2 = GetPin("fancontroller2");
-        private byte sensorcoolanttemp1 = GetPin("sensorcoolanttemp1");
-        private byte sensorcoolanttemp2 = GetPin("sensorcoolanttemp2");
+        private static byte fvemptyswitch = GetPin("fvemptyswitch");
+        private static byte fvcompleteswitch = GetPin("fvcompleteswitch");
+        private static byte stillfluidpump = GetPin("stillfluidpump");
+        private static byte stillfillvalve = GetPin("stillfillvalve");
+        private static byte stilllowswitch = GetPin("stilllowswitch");
+        private static byte stillhighswitch = GetPin("stillhighswitch");
+        private static byte stillelement = GetPin("stillelement");
+        private static byte stilldrainvalve = GetPin("stilldrainvalve");
+        private static byte rvfluidpump = GetPin("rvfluidpump");
+        private static byte rvdrainvalve = GetPin("rvdrainvalve");
+        private static byte rvfullswitch = GetPin("rvfullswitch");
+        private static byte rvemptyswitch = GetPin("rvemptyswitch");
+        private static byte vacuumpump = GetPin("vacuumpump");
+        private static byte fanset1 = GetPin("fanset1");
+        private static byte fanset2 = GetPin("fanset2");
+        private static byte fancontroller1 = GetPin("fancontroller1");
+        private static byte fancontroller2 = GetPin("fancontroller2");
+        private static byte sensorcoolanttemp1 = GetPin("sensorcoolanttemp1");
+        private static byte sensorcoolanttemp2 = GetPin("sensorcoolanttemp2");
 
 
 
         //Analog IO Pins
-        private byte sensorpressure = 55;
-        private byte sensorcolumntemp = 54;
+        private static byte sensorpressure = 55;
+        private static byte sensorcolumntemp = 54;
 
         //System Targets (I.E. Target Pressure to Maintain)
-        private double targetpressure = -10; //Target value in metric or imperial
-        private double tgtpreshysteresisbuffer = 0.5; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
+        private static double targetpressure = -10; //Target value in metric or imperial
+        private static double tgtpreshysteresisbuffer = 0.5; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
 
 
         //System Settings
-        private string units = "Imperial";
+        private static string units = "Imperial";
 
         private static byte GetPin(String Periphrial)
         {
@@ -76,7 +76,7 @@ namespace AutoStillDotNet
             { MessageBox.Show("Invalid pin number for " + Periphrial + ", check app config pin settings");  return 1; }
         }
 
-        public byte FVEmptySwtich
+        public static byte FVEmptySwtich
         {
             get
             {
@@ -88,7 +88,7 @@ namespace AutoStillDotNet
                     fvemptyswitch = value;
             }
         }
-        public byte FVCompleteSwitch
+        public static byte FVCompleteSwitch
         {
             get
             {
@@ -100,7 +100,7 @@ namespace AutoStillDotNet
                     fvcompleteswitch = value;
             }
         }
-        public byte StillFluidPump
+        public static byte StillFluidPump
         {
             get
             {
@@ -112,7 +112,7 @@ namespace AutoStillDotNet
                     stillfluidpump = value;
             }
         }
-        public byte StillFillValve
+        public static byte StillFillValve
         {
             get
             {
@@ -124,7 +124,7 @@ namespace AutoStillDotNet
                     stillfillvalve = value;
             }
         }
-        public byte StillLowSwitch
+        public static byte StillLowSwitch
         {
             get
             {
@@ -136,7 +136,7 @@ namespace AutoStillDotNet
                     stilllowswitch = value;
             }
         }
-        public byte StillHighSwitch
+        public static byte StillHighSwitch
         {
             get
             {
@@ -148,7 +148,7 @@ namespace AutoStillDotNet
                     stillhighswitch = value;
             }
         }
-        public byte StillElement
+        public static byte StillElement
         {
             get
             {
@@ -160,7 +160,7 @@ namespace AutoStillDotNet
                     stillelement = value;
             }
         }
-        public byte StillDrainValve
+        public static byte StillDrainValve
         {
             get
             {
@@ -172,7 +172,7 @@ namespace AutoStillDotNet
                     stilldrainvalve = value;
             }
         }
-        public byte RVFluidPump
+        public static byte RVFluidPump
         {
             get
             {
@@ -184,7 +184,7 @@ namespace AutoStillDotNet
                     rvfluidpump = value;
             }
         }
-        public byte RVDrainValve
+        public static byte RVDrainValve
         {
             get
             {
@@ -196,7 +196,7 @@ namespace AutoStillDotNet
                     rvdrainvalve = value;
             }
         }
-        public byte RVFullSwitch
+        public static byte RVFullSwitch
         {
             get
             {
@@ -208,7 +208,7 @@ namespace AutoStillDotNet
                     rvfullswitch = value;
             }
         }
-        public byte RVEmptySwitch
+        public static byte RVEmptySwitch
         {
             get
             {
@@ -220,7 +220,7 @@ namespace AutoStillDotNet
                     rvemptyswitch = value;
             }
         }
-        public byte VacuumPump
+        public static byte VacuumPump
         {
             get
             {
@@ -232,7 +232,7 @@ namespace AutoStillDotNet
                     vacuumpump = value;
             }
         }
-        public byte FanSet1
+        public static byte FanSet1
         {
             get
             {
@@ -244,7 +244,7 @@ namespace AutoStillDotNet
                     fanset1 = value;
             }
         }
-        public byte FanSet2
+        public static byte FanSet2
         {
             get
             {
@@ -256,7 +256,7 @@ namespace AutoStillDotNet
                     fanset2 = value;
             }
         }
-        public byte FanController1
+        public static byte FanController1
         {
             get
             {
@@ -268,7 +268,7 @@ namespace AutoStillDotNet
                     fancontroller1 = value;
             }
         }
-        public byte FanController2
+        public static byte FanController2
         {
             get
             {
@@ -280,7 +280,7 @@ namespace AutoStillDotNet
                     fancontroller2 = value;
             }
         }
-        public byte SensorPressure
+        public static byte SensorPressure
         {
             get
             {
@@ -292,7 +292,7 @@ namespace AutoStillDotNet
                     sensorpressure = value;
             }
         }
-        public byte SensorColumnTemp
+        public static byte SensorColumnTemp
         {
             get
             {
@@ -304,7 +304,7 @@ namespace AutoStillDotNet
                     sensorcolumntemp = value;
             }
         }
-        public byte SensorCoolantTemp1
+        public static byte SensorCoolantTemp1
         {
             get
             {
@@ -316,7 +316,7 @@ namespace AutoStillDotNet
                 sensorcoolanttemp1 = value;
             }
         }
-        public byte SensorCoolantTemp2
+        public static byte SensorCoolantTemp2
         {
             get
             {
@@ -328,7 +328,7 @@ namespace AutoStillDotNet
                 sensorcoolanttemp2 = value;
             }
         }
-        public double TargetPressure
+        public static double TargetPressure
         {
             get
             {
@@ -340,7 +340,7 @@ namespace AutoStillDotNet
                     targetpressure = value;
             }
         }
-        public double TgtPresHysteresisBuffer
+        public static double TgtPresHysteresisBuffer
         {
             get
             {
@@ -353,7 +353,7 @@ namespace AutoStillDotNet
             }
         }
 
-        public string Units
+        public static string Units
         {
             get
             {
@@ -365,8 +365,8 @@ namespace AutoStillDotNet
             }
         }
 
-        SqlConnection sqlconnection = new SqlConnection(ConfigurationManager.ConnectionStrings["LocalDB"].ConnectionString);
-        public SqlConnection sqlConnection
+        public static SqlConnection sqlconnection = new SqlConnection(ConfigurationManager.ConnectionStrings["LocalDB"].ConnectionString);
+        public static SqlConnection sqlConnection
         {
 
             get

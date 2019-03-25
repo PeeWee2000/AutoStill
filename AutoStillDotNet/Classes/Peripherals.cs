@@ -13,50 +13,47 @@ namespace AutoStillDotNet
     class Periphrials
     {
         //Try to initalize the arduino driver, if no arudino is found return null so the Main loop knows it needs to wait for an arduino to be plugged in
-        private readonly ArduinoDriver.ArduinoDriver driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
+        private static readonly ArduinoDriver.ArduinoDriver driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
 
-        public ArduinoDriver.ArduinoDriver InitializeArduinoDriver()
+        public static ArduinoDriver.ArduinoDriver InitializeArduinoDriver()
         {
             if (driver != null)
             {
-                //Declare the arduino itself
-                var properties = new SystemProperties();
-
                 //Digial inputs
-                driver.Send(new PinModeRequest(properties.FVEmptySwtich, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.FVCompleteSwitch, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.StillLowSwitch, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.StillHighSwitch, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.RVEmptySwitch, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.RVFullSwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.FVEmptySwtich, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.FVCompleteSwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.StillLowSwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.StillHighSwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.RVEmptySwitch, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.RVFullSwitch, PinMode.Input));
 
                 //Digital outputs
-                InitOutputPin(properties.StillFillValve);
-                InitOutputPin(properties.StillFluidPump);
-                InitOutputPin(properties.StillElement);
-                InitOutputPin(properties.StillDrainValve);
-                InitOutputPin(properties.RVFluidPump);
-                InitOutputPin(properties.RVDrainValve);
-                InitOutputPin(properties.VacuumPump);
-                InitOutputPin(properties.FanSet1);
-                InitOutputPin(properties.FanSet2);
+                InitOutputPin(SystemProperties.StillFillValve);
+                InitOutputPin(SystemProperties.StillFluidPump);
+                InitOutputPin(SystemProperties.StillElement);
+                InitOutputPin(SystemProperties.StillDrainValve);
+                InitOutputPin(SystemProperties.RVFluidPump);
+                InitOutputPin(SystemProperties.RVDrainValve);
+                InitOutputPin(SystemProperties.VacuumPump);
+                InitOutputPin(SystemProperties.FanSet1);
+                InitOutputPin(SystemProperties.FanSet2);
 
                 //Analog Inputs
-                driver.Send(new PinModeRequest(properties.SensorColumnTemp, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.SensorPressure, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.SensorCoolantTemp1, PinMode.Input));
-                driver.Send(new PinModeRequest(properties.SensorCoolantTemp2, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.SensorColumnTemp, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.SensorPressure, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.SensorCoolantTemp1, PinMode.Input));
+                driver.Send(new PinModeRequest(SystemProperties.SensorCoolantTemp2, PinMode.Input));
 
                 //Analog Outputs
-                InitOutputPin(properties.FanController1);
-                InitOutputPin(properties.FanController2);
+                InitOutputPin(SystemProperties.FanController1);
+                InitOutputPin(SystemProperties.FanController2);
             }
 
 
             //Send the initialized driver object (or null) back to whatever called this sub
             return driver;
         }
-        private void InitOutputPin(byte Pin)
+        private static void InitOutputPin(byte Pin)
         {
             driver.Send(new PinModeRequest(Pin, PinMode.Output));
             if (ConfigurationManager.AppSettings.Get("InvertPinPolarity") == "true") //The V1.0 relay board is retarded and uses Low == On
