@@ -45,13 +45,7 @@ namespace AutoStillDotNet
         public static volatile int PlateauTemp;
 
 
-        //TODO Put this into a background worker that only focuses on the UI
-        //public void UpdateUILoop()
-        //{
-        //    MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Main.Pressure + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI"); }));
-        //    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = Main.ColumnTemp + ((SystemProperties.Units == "Metric") ? "°C" : "°F"); }));
 
-        //}
 
 
         public Main()
@@ -127,22 +121,16 @@ namespace AutoStillDotNet
 
             //Declare the background workers
             SystemMonitor = BackGroundWorkers.InitializeSystemMonitor(driver, MainDispatcher);
-            //UIUpdater;
             PressureRegulator = BackGroundWorkers.InitializePressureWorker(driver, MainDispatcher);
             //StillController;
             FanController1 = BackGroundWorkers.InitializeFanController1(driver, MainDispatcher);
             FanController2 = BackGroundWorkers.InitializeFanController2(driver, MainDispatcher);
+            
             //Datatable for statistics and calculating when to turn the element off
             DataTable StillStats = Statistics.InitializeTable();
-
             chartRun.DataSource = StillStats;
 
 
-
-
-            //Background worker to monitor all sensors and switches on the still and keep global variables and the UI updated
-            //The idea here is to imtermittently check all variables and write to a local variable in memory to minimize commands sent to the arduino
-            //This is also convienent as it minimizes the amount of long of code required to message the arduino in the control loop
             StillController = new BackgroundWorker();
             StillController.WorkerSupportsCancellation = true;
             StillController.DoWork += new DoWorkEventHandler((state, args) =>
@@ -237,8 +225,8 @@ namespace AutoStillDotNet
 
                             //Start both fan controllers to maintain the temperature of the coolant in Reflux column and the Condensor
                             //Note that these are started here because they are auto-regulating and will shut off by themselves when not necessary
-                            FanController1.RunWorkerAsync();
-                            FanController2.RunWorkerAsync();
+                            //FanController1.RunWorkerAsync();
+                            //FanController2.RunWorkerAsync();
 
                             //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop 
                             //note thate the total delta is there incase it takes longer than 10 minutes to start seeing a temperature rise at the sensor
@@ -375,42 +363,58 @@ namespace AutoStillDotNet
                 } while (true);
             });
 
+            UIUpdater = new BackgroundWorker();
+            UIUpdater.WorkerSupportsCancellation = true;
+            UIUpdater.DoWork += new DoWorkEventHandler((state, args) =>
 
-            //Turns the pump on and off to maintain a pressure range
-            PressureRegulator = BackGroundWorkers.InitializePressureWorker(driver, MainDispatcher);
-            
-
-
-          
-
-
-
-            //int Value = 1;
-            //while (true)
-            //{
-            //    while (Value < 250)
-            //    { 
-            //    if (Value < 255)
-            //    { Value = Value + 5; }
-            //    else
-            //    { Value = 1; }
-            //     driver.Send(new AnalogWriteRequest(SystemProperties.FanController2, Convert.ToByte(Value)));
-            //    }
-            //    while (Value > 6)
-            //    {
-            //        if (Value > 1)
-            //        { Value = Value - 5; }
-            //        else
-            //        { Value = 1; }
-            //        driver.Send(new AnalogWriteRequest(SystemProperties.FanController2, Convert.ToByte(Value)));
-            //    }
+            {
+                do
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Main.Pressure + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI"); }));
+                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = Main.ColumnTemp + ((SystemProperties.Units == "Metric") ? "°C" : "°F"); }));
+                }
+                while (true);
+            });
 
 
-            //Start the workers and pause for 2 seconds to allow for initial values to be collected
+
+
+
+
+
+
+
+
+                //int Value = 1;
+                //while (true)
+                //{
+                //    while (Value < 250)
+                //    { 
+                //    if (Value < 255)
+                //    { Value = Value + 5; }
+                //    else
+                //    { Value = 1; }
+                //     driver.Send(new AnalogWriteRequest(SystemProperties.FanController2, Convert.ToByte(Value)));
+                //    }
+                //    while (Value > 6)
+                //    {
+                //        if (Value > 1)
+                //        { Value = Value - 5; }
+                //        else
+                //        { Value = 1; }
+                //        driver.Send(new AnalogWriteRequest(SystemProperties.FanController2, Convert.ToByte(Value)));
+                //    }
+
+
+                //Start the workers and pause for 2 seconds to allow for initial values to be collected
             SystemMonitor.RunWorkerAsync();
             System.Threading.Thread.Sleep(2000);
             StillController.RunWorkerAsync();
+            UIUpdater.RunWorkerAsync();
         }
+
+        //TODO Put this into a background worker that only focuses on the UI
 
         private void btnScan_Click(object sender, EventArgs e)
         {

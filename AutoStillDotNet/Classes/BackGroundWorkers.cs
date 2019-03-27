@@ -18,6 +18,11 @@ namespace AutoStillDotNet
         private static BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
         private static BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
 
+
+
+        //Background worker to monitor all sensor valuess and switch states on the still and keep global variables and the UI updated
+        //The idea here is to imtermittently check all variables and write to a local variable in memory to minimize commands sent to the arduino
+        //This is also convienent as it minimizes the amount of long of code required to message the arduino in the control loop
         public static BackgroundWorker InitializeSystemMonitor(ArduinoDriver.ArduinoDriver driver, Dispatcher MainDispatcher)
         {
             SystemMonitor = new BackgroundWorker();
