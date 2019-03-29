@@ -53,8 +53,9 @@ namespace AutoStillDotNet
         private static byte fancontroller2 = GetPin("fancontroller2");
         private static byte sensorcoolanttemp1 = GetPin("sensorcoolanttemp1");
         private static byte sensorcoolanttemp2 = GetPin("sensorcoolanttemp2");
+        private static byte sensorelementamperage = GetPin("sensorelementamperage");
 
-
+        
 
         //Analog IO Pins
         private static byte sensorpressure = 55;
@@ -326,6 +327,18 @@ namespace AutoStillDotNet
             {
 
                 sensorcoolanttemp2 = value;
+            }
+        }
+        public static byte SensorElementAmperage
+        {
+            get
+            {
+                return sensorelementamperage;
+            }
+            set
+            {
+
+                sensorelementamperage = value;
             }
         }
         public static double TargetPressure

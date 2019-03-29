@@ -31,6 +31,7 @@ namespace AutoStillDotNet
         public static volatile string Pressure;
         public static volatile int RefluxTemp;
         public static volatile int CondensorTemp;
+        public static volatile int ElementAmperage;
         public static volatile bool StillEmpty = true;
         public static volatile bool StillFull = false;
         public static volatile bool ElementOn = false;
@@ -56,22 +57,18 @@ namespace AutoStillDotNet
         private void Main_Load(object sender, EventArgs e)
         {
 
-        //This section sets up the Chart
-
-        ChartArea chartArea = new ChartArea();
+            //This section sets up the Chart
+            //Documentation for how this chart works available here https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings 
+            ChartArea chartArea = new ChartArea();
             chartRun.ChartAreas[0].Axes[0].MajorGrid.Enabled = false;//x axis
-            chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "####0°" + ((SystemProperties.Units == "Metric") ? "C" : "F"); //Set the Y axis to use up to 4 digits and if there is no digit set a 0 then tack a degree and a "C" on the end -- documentation available here https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings 
+            chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "####0°" + ((SystemProperties.Units == "Metric") ? "C" : "F"); //Set the Y axis to use up to 4 digits and if there is no digit set a 0 then tack a degree and a "C" on the end
             chartRun.ChartAreas[0].AxisY.IntervalType = DateTimeIntervalType.Number; //Dont know why it has to be a "DateTime" interval type but it works
-
-            //chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 13);
             chartRun.ChartAreas[0].AxisX.LabelStyle.Format = "mm:ss";
             chartRun.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Seconds;
             chartRun.ChartAreas[0].Axes[1].MajorGrid.Enabled = true;//y axis
             chartRun.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
             chartRun.ChartAreas[0].AxisY2.LabelStyle.Format = "###0.0##" + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI");
             chartRun.ChartAreas[0].AxisY2.IntervalAutoMode = IntervalAutoMode.FixedCount;
-            //chartRun.ChartAreas[0].AxisY2.IntervalType = System.Windows.Forms.DataVisualization.Charting.IntervalType.Number;
-
 
 
             Series temperatureseries = new Series("Temperature");
@@ -212,8 +209,9 @@ namespace AutoStillDotNet
                         row["TemperatureDelta"] = 0;
                         row["Pressure"] = Convert.ToDecimal(Pressure);
                         row["Phase"] = Phase;
-                        row["RefluxTemperature"] = Convert.ToInt16(RefluxTemp);
-                        row["CondensorTemperature"] = Convert.ToInt16(CondensorTemp);
+                        row["Amperage"] = ElementAmperage;
+                        row["RefluxTemperature"] = RefluxTemp;
+                        row["CondensorTemperature"] = CondensorTemp;
                         StillStats.Rows.Add(row);
 
                         //Get the last written row for collecting temperature rise statistics
@@ -231,39 +229,39 @@ namespace AutoStillDotNet
                             //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop 
                             //note thate the total delta is there incase it takes longer than 10 minutes to start seeing a temperature rise at the sensor
                             while ((StillEmpty == false && AverageDelta >= 0.02) || TotalDelta < 0.6)
-
-                        {
-                            //Change this back to 10 seconds
-                            System.Threading.Thread.Sleep(250);
-                            //Once the element has been on for 10 minutes start checking for the plateau
-                            if (Counter < 60)
                             {
-                                Counter = Counter + 1;
-                            }
-                            else
-                            {
-                                Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
-                                Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
-                                Temp1 = Delta1.Field<Int32>("Temperature");
-                                Temp2 = Delta2.Field<Int32>("Temperature");
-                                AverageDelta = ((Temp2 - Temp1) / Temp2);
-                                TotalDelta = TotalDelta + AverageDelta;
-                            }
+                                //Change this back to 10 seconds
+                                System.Threading.Thread.Sleep(250);
+                                //Once the element has been on for 10 minutes start checking for the plateau
+                                if (Counter < 60)
+                                {
+                                    Counter = Counter + 1;
+                                }
+                                else
+                                {
+                                    Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
+                                    Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
+                                    Temp1 = Delta1.Field<Int32>("Temperature");
+                                    Temp2 = Delta2.Field<Int32>("Temperature");
+                                    AverageDelta = ((Temp2 - Temp1) / Temp2);
+                                    TotalDelta = TotalDelta + AverageDelta;
+                                }
 
-                            CurrentTemp = Convert.ToInt32(ColumnTemp);
-                            CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
-                            row = StillStats.NewRow();
-                            row["Time"] = DateTime.Now;
-                            row["Temperature"] = CurrentTemp;
-                            row["TemperatureDelta"] = CurrentDelta;
-                            row["Pressure"] = Convert.ToDecimal(Pressure);
-                            row["Phase"] = Phase;
-                                row["RefluxTemperature"] = Convert.ToInt16(RefluxTemp);
-                                row["CondensorTemperature"] = Convert.ToInt16(CondensorTemp);
+                                CurrentTemp = Convert.ToInt32(ColumnTemp);
+                                CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
+                                row = StillStats.NewRow();
+                                row["Time"] = DateTime.Now;
+                                row["Temperature"] = CurrentTemp;
+                                row["TemperatureDelta"] = CurrentDelta;
+                                row["Pressure"] = Convert.ToDecimal(Pressure);
+                                row["Phase"] = Phase;
+                                row["Amperage"] = ElementAmperage;
+                                row["RefluxTemperature"] = RefluxTemp;
+                                row["CondensorTemperature"] = CondensorTemp;
                                 StillStats.Rows.Add(row);
-                            LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
-                            MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
-                        }
+                                LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
+                                MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
+                            }
 
                         //Prep variables related to the distillation phase and start the fan controller for the condensor
                         Phase = 2;
@@ -275,8 +273,7 @@ namespace AutoStillDotNet
 
                             //Once the first plateau is reached allowing for a 4 degree change at the most
                             //or end the batch if the saftey limit switch is triggered also reset the Delta counters so the next step is not skipped
-                            while (StillEmpty == false && (Temp2 - PlateauTemp) < 5 && RVFull == false)
-
+                        while (StillEmpty == false && (Temp2 - PlateauTemp) < 5 && RVFull == false)
                         {
                             Delta1 = StillStats.Rows[StillStats.Rows.Count - 19];
                             Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
@@ -293,8 +290,9 @@ namespace AutoStillDotNet
                             row["TemperatureDelta"] = CurrentDelta;
                             row["Pressure"] = Convert.ToDecimal(Pressure);
                             row["Phase"] = Phase;
-                            row["RefluxTemperature"] = Convert.ToInt16(RefluxTemp);
-                            row["CondensorTemperature"] = Convert.ToInt16(CondensorTemp);
+                            row["Amperage"] = ElementAmperage;
+                            row["RefluxTemperature"] = RefluxTemp;
+                            row["CondensorTemperature"] = CondensorTemp;
                             StillStats.Rows.Add(row);
                             LastRow = StillStats.Rows[StillStats.Rows.Count - 1];
                             MainDispatcher.Invoke(new Action(() => { chartRun.DataBind(); }));
@@ -316,8 +314,8 @@ namespace AutoStillDotNet
 
                             //Turn off the vacuum pump and fan controllers synchronously with the main thread
                             PressureRegulator.CancelAsync();
-                            FanController1.CancelAsync();
-                            FanController2.CancelAsync();
+                            //FanController1.CancelAsync();
+                            //FanController2.CancelAsync();
                             while (PressureRegulator.CancellationPending == true || FanController1.CancellationPending == true || FanController2.CancellationPending == true)
                             { System.Threading.Thread.Sleep(100); }
 

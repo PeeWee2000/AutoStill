@@ -44,6 +44,7 @@ namespace AutoStillDotNet
                             MainDispatcher.Invoke(new Action(() => { Main.ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
                             MainDispatcher.Invoke(new Action(() => { Main.RefluxTemp = Convert.ToInt32((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorCoolantTemp1)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); }));
                             MainDispatcher.Invoke(new Action(() => { Main.CondensorTemp = Convert.ToInt32((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorCoolantTemp2)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); }));
+                            MainDispatcher.Invoke(new Action(() => { Main.ElementAmperage = Convert.ToInt32((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorElementAmperage)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); }));
                             success = true;
                         }
                         catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
