@@ -2,38 +2,12 @@
 using System.Configuration;
 using System;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace AutoStillDotNet
 {
     public static class SystemProperties
     {
-
-        ////ACTUAL VALUES
-        ////Digital IO Pins
-        //private static byte fvemptyswitch = 1;
-        //private static byte fvcompleteswitch = 1;
-        //private static byte stillfluidpump = 30;
-        //private static byte stillfillvalve = 7 + 21;
-        //private static byte stilllowswitch = 49;
-        //private static byte stillhighswitch = 51;
-        //private static byte stillelement = 1;
-        //private static byte stilldrainvalve = 1;
-        //private static byte rvfluidpump = 1;
-        //private static byte rvdrainvalve = 1;
-        //private static byte rvfullswitch = 1;
-        //private static byte vacuumpump = 6 + 21;
-        //private static byte fanset1 = 1;
-        //private static byte fanset2 = 1;
-        //private static byte fancontroller1 = 1;
-        //private static byte fancontroller2 = 1;
-
-        ////Analog IO Pins
-        //private static byte sensorpressure = 55;
-        //private static byte sensorcolumntemp = 54;
-
-        //DEV VALUES
-        //Digital IO Pins
-        //private string test = ConfigurationManager.AppSettings.Get("fvemptyswitch");
         private static byte fvemptyswitch = GetPin("fvemptyswitch");
         private static byte fvcompleteswitch = GetPin("fvcompleteswitch");
         private static byte stillfluidpump = GetPin("stillfluidpump");
@@ -47,16 +21,12 @@ namespace AutoStillDotNet
         private static byte rvfullswitch = GetPin("rvfullswitch");
         private static byte rvemptyswitch = GetPin("rvemptyswitch");
         private static byte vacuumpump = GetPin("vacuumpump");
-        private static byte fanset1 = GetPin("fanset1");
-        private static byte fanset2 = GetPin("fanset2");
         private static byte fancontroller1 = GetPin("fancontroller1");
         private static byte fancontroller2 = GetPin("fancontroller2");
         private static byte sensorcoolanttemp1 = GetPin("sensorcoolanttemp1");
         private static byte sensorcoolanttemp2 = GetPin("sensorcoolanttemp2");
         private static byte sensorelementamperage = GetPin("sensorelementamperage");
-
-        
-
+       
         //Analog IO Pins
         private static byte sensorpressure = 55;
         private static byte sensorcolumntemp = 54;
@@ -72,10 +42,13 @@ namespace AutoStillDotNet
         private static byte GetPin(String Periphrial)
         {
             try
-            { return Convert.ToByte(ConfigurationManager.AppSettings.Get(Periphrial)); }
+            { return Convert.ToByte(Regex.Match(ConfigurationManager.AppSettings.Get(Periphrial), @"(?<=Pin=)\d+").Value); }
             catch
             { MessageBox.Show("Invalid pin number for " + Periphrial + ", check app config pin settings");  return 1; }
         }
+
+        private static void WriteSetting()
+        { }
 
         public static byte FVEmptySwtich
         {
@@ -87,6 +60,7 @@ namespace AutoStillDotNet
             {
                 
                     fvemptyswitch = value;
+
             }
         }
         public static byte FVCompleteSwitch
@@ -231,30 +205,6 @@ namespace AutoStillDotNet
             {
                 
                     vacuumpump = value;
-            }
-        }
-        public static byte FanSet1
-        {
-            get
-            {
-                return fanset1;
-            }
-            set
-            {
-                
-                    fanset1 = value;
-            }
-        }
-        public static byte FanSet2
-        {
-            get
-            {
-                return fanset2;
-            }
-            set
-            {
-                
-                    fanset2 = value;
             }
         }
         public static byte FanController1

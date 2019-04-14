@@ -1,10 +1,7 @@
 ﻿using ArduinoDriver;
 using ArduinoDriver.SerialProtocol;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Windows.Threading;
 
 namespace AutoStillDotNet
@@ -32,7 +29,7 @@ namespace AutoStillDotNet
             {
                 do
                 {
-                    if (Main.Run != true || driver == null) //The periphrials class returns null if no arduin is found on any of the com ports
+                    if (Main.Run != true || driver == null) //The periphrials class returns null if no arduino is found on any of the com ports
                     { break; }
                     System.Threading.Thread.Sleep(1000);
                     //Check Temperature
@@ -41,13 +38,22 @@ namespace AutoStillDotNet
                     {
                         try
                         {
-                            MainDispatcher.Invoke(new Action(() => { Main.ColumnTemp = Convert.ToInt64((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorColumnTemp)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)).ToString(); }));
-                            MainDispatcher.Invoke(new Action(() => { Main.RefluxTemp = Convert.ToInt32((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorCoolantTemp1)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); }));
-                            MainDispatcher.Invoke(new Action(() => { Main.CondensorTemp = Convert.ToInt32((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorCoolantTemp2)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); }));
-                            MainDispatcher.Invoke(new Action(() => { Main.ElementAmperage = Convert.ToInt32((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorElementAmperage)).PinValue.ToString()) * (5.0 / 1023.0)) - 1.25) / 0.005)); }));
+                            MainDispatcher.Invoke(new Action(() => 
+                            {
+                                Main.ColumnTemp = DriverFunctions.GetTemperature(driver, SystemProperties.SensorColumnTemp).ToString(); 
+                                Main.RefluxTemp = DriverFunctions.GetTemperature(driver, SystemProperties.SensorCoolantTemp1);
+                                Main.CondensorTemp = DriverFunctions.GetTemperature(driver, SystemProperties.SensorCoolantTemp2); 
+                                Main.ElementAmperage = DriverFunctions.GetAmperage(driver, SystemProperties.SensorColumnTemp);
+                             }));
                             success = true;
                         }
-                        catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
+                        catch
+                        {
+                            MainDispatcher.Invoke(new Action(() => {
+                                driver.Dispose();
+                                driver = Periphrials.InitializeArduinoDriver();
+                            }));
+                        }
                     }
 
                     //Check the low level switch -- a value of low means the lower still switch is open
@@ -85,7 +91,7 @@ namespace AutoStillDotNet
                     }));
 
                     //Check the pressure (1024 is the resolution of the ADC on the arduino, 45.1 is the approximate pressure range in PSI that the sensor is capable of reading, the -15 makes sure that STP = 0 PSI/kPa)
-                    MainDispatcher.Invoke(new Action(() => { Main.Pressure = Math.Round((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorPressure)).PinValue.ToString()) / 1024) * 45.1) - 15) * ((SystemProperties.Units == "Metric") ? 6.895 : 1), 2).ToString(); }));
+                    MainDispatcher.Invoke(new Action(() => { Main.Pressure = Math.Round((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorPressure)).PinValue.ToString()) / 1024) * 45.1) - 16.5) * ((SystemProperties.Units == "Metric") ? 6.895 : 1), 2).ToString(); }));
 
                 } while (true);
             });

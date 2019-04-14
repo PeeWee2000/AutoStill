@@ -267,19 +267,20 @@
             // pinSettingsToolStripMenuItem
             // 
             this.pinSettingsToolStripMenuItem.Name = "pinSettingsToolStripMenuItem";
-            this.pinSettingsToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.pinSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.pinSettingsToolStripMenuItem.Text = "Pin Settings";
+            this.pinSettingsToolStripMenuItem.Click += new System.EventHandler(this.PinSettingsToolStripMenuItem_Click);
             // 
             // sensorCalibrationToolStripMenuItem
             // 
             this.sensorCalibrationToolStripMenuItem.Name = "sensorCalibrationToolStripMenuItem";
-            this.sensorCalibrationToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.sensorCalibrationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.sensorCalibrationToolStripMenuItem.Text = "Sensor Calibration";
             // 
             // costSettingsToolStripMenuItem
             // 
             this.costSettingsToolStripMenuItem.Name = "costSettingsToolStripMenuItem";
-            this.costSettingsToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.costSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.costSettingsToolStripMenuItem.Text = "Cost Settings";
             // 
             // dataToolStripMenuItem
