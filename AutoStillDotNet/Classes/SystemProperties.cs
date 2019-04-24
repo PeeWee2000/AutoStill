@@ -32,7 +32,7 @@ namespace AutoStillDotNet
         private static byte sensorcolumntemp = 54;
 
         //System Targets (I.E. Target Pressure to Maintain)
-        private static double targetpressure = -10; //Target value in metric or imperial
+        private static double targetpressure = -5; //Target value in metric or imperial
         private static double tgtpreshysteresisbuffer = 0.5; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
 
 

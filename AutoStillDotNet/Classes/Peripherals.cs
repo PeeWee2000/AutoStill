@@ -14,10 +14,12 @@ namespace AutoStillDotNet
     class Periphrials
     {
         //Try to initalize the arduino driver, if no arudino is found return null so the Main loop knows it needs to wait for an arduino to be plugged in
-        private static readonly ArduinoDriver.ArduinoDriver driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
+        private static  ArduinoDriver.ArduinoDriver driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true);
 
         public static ArduinoDriver.ArduinoDriver InitializeArduinoDriver()
         {
+            if (driver == null)
+            { driver = (ArduinoCOMPort() == null) ? null : new ArduinoDriver.ArduinoDriver(ArduinoModel.Mega2560, ArduinoCOMPort(), true); }
             if (driver != null)
             {
                 foreach (string Key in ConfigurationManager.AppSettings.AllKeys)

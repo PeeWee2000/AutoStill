@@ -24,7 +24,7 @@ namespace AutoStillDotNet
         //since it isnt critical that I get the latest values and in practice the threads will only be updating values every couple of seconds rather than instantaneously
         //https://stackoverflow.com/questions/72275/when-should-the-volatile-keyword-be-used-in-c
         public static volatile bool Run = true; //Used to shut down or start the whole process
-        public static volatile int Phase = 0; //Used to control the main still control background worker and report progress
+        public static volatile int Phase = -1; //Used to control the main still control background worker and report progress -1 = initializing, 0 = filling still and checking values, 1 = heating / vacuuming, 2 = distilling, 3 = draining
 
         //Varaiables written to and read by all the various loops -- Assume the still is empty and all periphrials are off when starting up
        
@@ -45,11 +45,7 @@ namespace AutoStillDotNet
         public static volatile bool RVEmpty = false;
         public static volatile float RVWeight = 0;
         public static volatile int PlateauTemp;
-
-
-
-
-
+        
         public Main()
         {
 
@@ -145,6 +141,9 @@ namespace AutoStillDotNet
                     //Run unless a stop condition is hit
                     if (Run != true || driver == null)
                     { break; }
+
+                        while (Phase == -1)//Wait for initial values to be collected before starting
+                        { System.Threading.Thread.Sleep(250); }
 
                         //Check to see if the still is full, if not fill it. This ensures there is no product wasted if the previous batch was stopped half way
                         if (StillFull == false && Phase < 2)
@@ -284,8 +283,7 @@ namespace AutoStillDotNet
                                 Temp1 = Delta1.Field<Int32>("Temperature");
                                 Temp2 = Delta2.Field<Int32>("Temperature");
                                 AverageDelta = Math.Abs(((Temp2 - Temp1) / Temp2));
-                                //Change this back to 10 seconds
-                                System.Threading.Thread.Sleep(250);
+                                System.Threading.Thread.Sleep(250); //Change this back to 10 seconds
                                 CurrentTemp = Convert.ToInt32(ColumnTemp);
                                 CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
                                 row = StillStats.NewRow();
@@ -364,7 +362,6 @@ namespace AutoStillDotNet
             UIUpdater = new BackgroundWorker();
             UIUpdater.WorkerSupportsCancellation = true;
             UIUpdater.DoWork += new DoWorkEventHandler((state, args) =>
-
             {
                 do
                 {

@@ -15,8 +15,6 @@ namespace AutoStillDotNet
         private static BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
         private static BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
 
-
-
         //Background worker to monitor all sensor valuess and switch states on the still and keep global variables and the UI updated
         //The idea here is to imtermittently check all variables and write to a local variable in memory to minimize commands sent to the arduino
         //This is also convienent as it minimizes the amount of long of code required to message the arduino in the control loop
@@ -58,7 +56,7 @@ namespace AutoStillDotNet
 
                     //Check the low level switch -- a value of low means the lower still switch is open
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(SystemProperties.StillLowSwitch)).PinValue == DigitalValue.High)
+                        if (driver.Send(new DigitalReadRequest(SystemProperties.StillLowSwitch)).PinValue == DigitalValue.Low)
                         { Main.StillEmpty = true; }
                         else
                         { Main.StillEmpty = false; }
@@ -66,7 +64,7 @@ namespace AutoStillDotNet
 
                     //Check the high level switch -- a value of high means the upper still switch is closed
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(SystemProperties.StillHighSwitch)).PinValue == DigitalValue.Low)
+                        if (driver.Send(new DigitalReadRequest(SystemProperties.StillHighSwitch)).PinValue == DigitalValue.High)
                         { Main.StillFull = true; }
                         else
                         { Main.StillFull = false; }
@@ -93,6 +91,8 @@ namespace AutoStillDotNet
                     //Check the pressure (1024 is the resolution of the ADC on the arduino, 45.1 is the approximate pressure range in PSI that the sensor is capable of reading, the -15 makes sure that STP = 0 PSI/kPa)
                     MainDispatcher.Invoke(new Action(() => { Main.Pressure = Math.Round((((Convert.ToDouble(driver.Send(new AnalogReadRequest(SystemProperties.SensorPressure)).PinValue.ToString()) / 1024) * 45.1) - 16.5) * ((SystemProperties.Units == "Metric") ? 6.895 : 1), 2).ToString(); }));
 
+                    if (Main.Phase == -1) { Main.Phase = 0; }
+
                 } while (true);
             });
             return SystemMonitor;
@@ -100,13 +100,8 @@ namespace AutoStillDotNet
 
         public static BackgroundWorker InitializeStillController(ArduinoDriver.ArduinoDriver driver, Dispatcher MainDispatcher)
         {
-
             return StillController;
         }
-
-
-
-
             public static BackgroundWorker InitializePressureWorker(ArduinoDriver.ArduinoDriver driver, Dispatcher MainDispatcher)
         {
             PressureWorker = new BackgroundWorker();
@@ -114,7 +109,7 @@ namespace AutoStillDotNet
             PressureWorker.DoWork += new DoWorkEventHandler((state, args) =>
             {
                 //Make sure the pump is off
-                MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(SystemProperties.VacuumPump, DigitalValue.Low)); }));
+                MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver,SystemProperties.VacuumPump); }));
                 Main.VacuumPumpOn = false;
                 do
                 {
@@ -124,10 +119,10 @@ namespace AutoStillDotNet
                         { break; }
 
                         System.Threading.Thread.Sleep(1000);
-                        if (Convert.ToDouble(Main.Pressure) > SystemProperties.TargetPressure)
+                        if (Convert.ToDouble(Main.Pressure) > SystemProperties.TargetPressure && Main.VacuumPumpOn == false)
                         {
                             //Turn the vacuum pump on
-                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(SystemProperties.VacuumPump, DigitalValue.High)); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.VacuumPump); }));
                             Main.VacuumPumpOn = true;
 
                             //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
@@ -138,9 +133,8 @@ namespace AutoStillDotNet
                             while (Convert.ToDouble(Main.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureWorker.CancellationPending == false);
 
                             //Once the pressure has reached its target turn the pump off
-                            MainDispatcher.Invoke(new Action(() => { driver.Send(new DigitalWriteRequest(SystemProperties.VacuumPump, DigitalValue.Low)); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.VacuumPump); }));
                             Main.VacuumPumpOn = false;
-
                         }
                     }
                     catch { MainDispatcher.Invoke(new Action(() => { driver = Periphrials.InitializeArduinoDriver(); })); }
