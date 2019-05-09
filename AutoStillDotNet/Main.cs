@@ -247,9 +247,10 @@ namespace AutoStillDotNet
                                     Temp1 = Delta1.Field<Int32>("Temperature");
                                     Temp2 = Delta2.Field<Int32>("Temperature");
                                     AverageDelta = ((Temp2 - Temp1) / Temp2);
-                                    TotalDelta = TotalDelta + AverageDelta;
+                                    if (Temp2 > Temp1)
+                                    { TotalDelta = TotalDelta + Math.Abs(AverageDelta); }
                                 }
-
+                                
                                 CurrentTemp = Convert.ToInt32(ColumnTemp);
                                 CurrentDelta = CurrentTemp - LastRow.Field<Int32>("Temperature");
                                 row = StillStats.NewRow();
@@ -345,7 +346,7 @@ namespace AutoStillDotNet
                             }
                             //Turn off the pump and shut the valves and give them 3 seconds to close
                             MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.RVFluidPump); }));
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.RVDrainValve); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.RVDrainValve); }));
 
                             Phase = 0;
                         }
