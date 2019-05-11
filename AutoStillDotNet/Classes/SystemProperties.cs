@@ -8,13 +8,6 @@ namespace AutoStillDotNet
 {
     public static class SystemProperties
     {
-        private static byte fancontroller2 = GetPin("fancontroller2");
-        private static byte sensorcoolanttemp2 = GetPin("sensorcoolanttemp2");
-
-        //Analog IO Pins
-        private static byte sensorpressure = 55;
-        private static double tgtpreshysteresisbuffer = 0.5; //How far under the target to actually pump until to prevent the pump from turning on and off rapidly
-
         private static byte GetPin(String Periphrial)
         {
             try
@@ -40,73 +33,16 @@ namespace AutoStillDotNet
         public static byte RVEmptySwitch { get; set; } = GetPin("rvemptyswitch");
         public static byte VacuumPump { get; set; } = GetPin("vacuumpump");
         public static byte FanController1 { get; set; } = GetPin("fancontroller1");
-        public static byte FanController2
-        {
-            get
-            {
-                return fancontroller2;
-            }
-            set
-            {
-                
-                    fancontroller2 = value;
-            }
-        }
-        public static byte SensorPressure
-        {
-            get
-            {
-                return sensorpressure;
-            }
-            set
-            {
-                
-                    sensorpressure = value;
-            }
-        }
+        public static byte FanController2 { get; set; } = GetPin("fancontroller2");
+        public static byte SensorPressure { get; set; } = 55;
         public static byte SensorColumnTemp { get; set; } = 54;
         public static byte SensorCoolantTemp1 { get; set; } = GetPin("sensorcoolanttemp1");
-        public static byte SensorCoolantTemp2
-        {
-            get
-            {
-                return sensorcoolanttemp2;
-            }
-            set
-            {
-
-                sensorcoolanttemp2 = value;
-            }
-        }
+        public static byte SensorCoolantTemp2 { get; set; } = GetPin("sensorcoolanttemp2");
         public static byte SensorElementAmperage { get; set; } = GetPin("sensorelementamperage");
         public static double TargetPressure { get; set; } = -5;
-        public static double TgtPresHysteresisBuffer
-        {
-            get
-            {
-                return tgtpreshysteresisbuffer;
-            }
-            set
-            {
-                
-                    tgtpreshysteresisbuffer = value;
-            }
-        }
-
+        public static double TgtPresHysteresisBuffer { get; set; } = 0.5;
         public static string Units { get; set; } = "Imperial";
-
-        public static SqlConnection sqlconnection = new SqlConnection(ConfigurationManager.ConnectionStrings["LocalDB"].ConnectionString);
-        public static SqlConnection sqlConnection
-        {
-
-            get
-            {
-                return sqlconnection;
-            }
-            set
-            {
-            }
-        }
+        public static SqlConnection sqlconnection { get; set; } = new SqlConnection(ConfigurationManager.ConnectionStrings["LocalDB"].ConnectionString);
 
     }
 }
