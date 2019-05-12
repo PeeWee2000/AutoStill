@@ -48,7 +48,6 @@ namespace AutoStillDotNet
         
         public Main()
         {
-
             //var waef = new Forms.Settings();
             //waef.Show();
             InitializeComponent();
@@ -56,7 +55,6 @@ namespace AutoStillDotNet
         }
         private void Main_Load(object sender, EventArgs e)
         {
-
             //This section sets up the Chart
             //Documentation for how this chart works available here https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings 
             ChartArea chartArea = new ChartArea();
@@ -91,7 +89,6 @@ namespace AutoStillDotNet
             chartRun.Series[1].YValueType = ChartValueType.Single;
             chartRun.Series[1].XValueType = ChartValueType.DateTime;
             chartRun.Series[1].YAxisType = AxisType.Secondary;
-
         }
 
 

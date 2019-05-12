@@ -100,7 +100,7 @@ namespace AutoStillDotNet
 
             String Values = ("'"+RunDate.ToShortDateString() + "'" + ", '" + RunStart.ToString() + "'" + ", '" + RunEnd.ToString() + "'" + ", '" + Duration.ToString() + "', " + Complete + ", '" + Units + "'");
 
-            SqlConnection sqlConnection = SystemProperties.sqlConnection;
+            SqlConnection sqlConnection = SystemProperties.sqlconnection;
             using (var command = new SqlCommand("InsertTable") { CommandType = CommandType.Text })
             {
                 command.CommandText = "insert into RunHeaders (rhDate, rhStart, rhEnd, rhDuration, rhComplete, rhUnits) values ("+ Values +")";
@@ -114,7 +114,7 @@ namespace AutoStillDotNet
         public static void SaveRun(DataTable RunData, DateTime RunStart)
         {
             //Get the connection string
-            SqlConnection sqlConnection = SystemProperties.sqlConnection;
+            SqlConnection sqlConnection = SystemProperties.sqlconnection;
 
             //Variable to hold the run header ID to make sure the records are linked to the run properly
             int HeaderID;
