@@ -81,7 +81,7 @@ namespace AutoStillDotNet
 
                     //Check the recieving vessel high level switch -- a value of high means the upper rv switch is closed
                     MainDispatcher.Invoke(new Action(() => {
-                        if (driver.Send(new DigitalReadRequest(SystemProperties.RVFullSwitch)).PinValue == DigitalValue.High)
+                        if (driver.Send(new DigitalReadRequest(SystemProperties.RVFullSwitch)).PinValue == DigitalValue.Low)
                         { Main.RVFull = true; }
                         else
                         { Main.RVFull = false; }
@@ -109,7 +109,7 @@ namespace AutoStillDotNet
             PressureWorker.DoWork += new DoWorkEventHandler((state, args) =>
             {
                 //Make sure the pump is off
-                MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver,SystemProperties.VacuumPump); }));
+                MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver,SystemProperties.VacuumPump); }));
                 Main.VacuumPumpOn = false;
                 do
                 {
@@ -122,7 +122,7 @@ namespace AutoStillDotNet
                         if (Convert.ToDouble(Main.Pressure) > SystemProperties.TargetPressure && Main.VacuumPumpOn == false)
                         {
                             //Turn the vacuum pump on
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.VacuumPump); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.VacuumPump); }));
                             Main.VacuumPumpOn = true;
 
                             //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
@@ -133,7 +133,7 @@ namespace AutoStillDotNet
                             while (Convert.ToDouble(Main.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureWorker.CancellationPending == false);
 
                             //Once the pressure has reached its target turn the pump off
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.VacuumPump); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.VacuumPump); }));
                             Main.VacuumPumpOn = false;
                         }
                     }

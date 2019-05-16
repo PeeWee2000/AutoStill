@@ -147,11 +147,11 @@ namespace AutoStillDotNet
                         {
                             {
                                 //Open the inlet valve and turn the inlet pump on
-                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.StillFillValve); }));
+                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.StillFillValve); }));
                                 StillValveOpen = true;
                                 //Wait 5 seconds for the valve to open
                                 System.Threading.Thread.Sleep(3000);
-                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.StillFluidPump); }));
+                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.StillFluidPump); }));
                                 MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Still"; }));
                                 StillPumpOn = true;
 
@@ -162,9 +162,9 @@ namespace AutoStillDotNet
                                     System.Threading.Thread.Sleep(1000);
                                 }
                                 //Close the valve and turn off the pump
-                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.StillFillValve); }));
+                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillFillValve); }));
                                 StillValveOpen = false;
-                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.StillFluidPump); }));
+                                MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillFluidPump); }));
                                 MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Complete"; }));
 
                                 StillPumpOn = false;
@@ -198,7 +198,7 @@ namespace AutoStillDotNet
                             double StartTemp = Convert.ToInt64((((Convert.ToDouble(StartTempRaw) * (5.0 / 1023.0)) - 1.25) / 0.005));
                             double Temp1 = 0.0;
                             double Temp2 = 0.0;
-                            double AverageDelta = 1.0;
+                            double AverageDelta = 0.0;
                             double TotalDelta = 0.0;
 
                             DataRow row;
@@ -228,7 +228,7 @@ namespace AutoStillDotNet
 
                             //Keep the element on and keep collecting data every 10 seconds until the first plateau is reached then go to the next loop 
                             //note thate the total delta is there incase it takes longer than 10 minutes to start seeing a temperature rise at the sensor
-                            while ((StillEmpty == false && AverageDelta >= 0.02) || TotalDelta < 0.6)
+                            while ((StillEmpty == false && AverageDelta >= 0.02) || TotalDelta < 0.25)
                             {
                                 //Change this back to 10 seconds
                                 System.Threading.Thread.Sleep(250);
@@ -243,9 +243,9 @@ namespace AutoStillDotNet
                                     Delta2 = StillStats.Rows[StillStats.Rows.Count - 1];
                                     Temp1 = Delta1.Field<Int32>("Temperature");
                                     Temp2 = Delta2.Field<Int32>("Temperature");
-                                    AverageDelta = ((Temp2 - Temp1) / Temp2);
+                                    AverageDelta = Temp2 != 0 ? ((Temp2 - Temp1) / Temp2) : 0;
                                     if (Temp2 > Temp1)
-                                    { TotalDelta = TotalDelta + Math.Abs(AverageDelta); }
+                                    { TotalDelta = Temp2 != 0 ? ((Temp2 - StartTemp) / Temp2) : 0; }
                                 }
                                 
                                 CurrentTemp = Convert.ToInt32(ColumnTemp);
@@ -300,7 +300,7 @@ namespace AutoStillDotNet
 
                             //Batch complete!
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Batch Complete, Saving Run Data"; }));
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.StillElement); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillElement); }));
                             ElementOn = false;
                             Phase = 3;
                         }
@@ -322,28 +322,28 @@ namespace AutoStillDotNet
 
                             //Fill the system with air so it is at a neutral pressure before pumping any fluids -- note that the system will pull air from the drain valve  
                             //since it eventually vents somewhere that is at atmospheric pressure
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.StillDrainValve); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.StillDrainValve); }));
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Still"; }));
                             while (StillEmpty == false || Convert.ToDouble(Pressure) <= -0.2)
                             { System.Threading.Thread.Sleep(1500); }
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.StillDrainValve); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillDrainValve); }));
                             System.Threading.Thread.Sleep(3000);
 
 
                             //Make sure that the switches are working then pump the Recieving vessels contents into a storage tank so the next run can begin
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Distillate"; }));
                             MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(SystemProperties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false; }));
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.RVDrainValve); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.RVDrainValve); }));
                             System.Threading.Thread.Sleep(3000); //3 second delay so the valve has time to open
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOn(driver, SystemProperties.RVFluidPump); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.RVFluidPump); }));
                             while (RVEmpty == false)
                             {
                                 //MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(SystemProperties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false; }));
                                 System.Threading.Thread.Sleep(1500);
                             }
                             //Turn off the pump and shut the valves and give them 3 seconds to close
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.RVFluidPump); }));
-                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.TurnOff(driver, SystemProperties.RVDrainValve); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.RVFluidPump); }));
+                            MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.RVDrainValve); }));
 
                             Phase = 0;
                         }

@@ -34,14 +34,14 @@ namespace AutoStillDotNet
         public static byte VacuumPump { get; set; } = GetPin("vacuumpump");
         public static byte FanController1 { get; set; } = GetPin("fancontroller1");
         public static byte FanController2 { get; set; } = GetPin("fancontroller2");
-        public static byte SensorPressure { get; set; } = 55;
-        public static byte SensorColumnTemp { get; set; } = 54;
+        public static byte SensorPressure { get; set; } = GetPin("sensorpressure");
+        public static byte SensorColumnTemp { get; set; } = GetPin("sensorcolumntemp");
         public static byte SensorCoolantTemp1 { get; set; } = GetPin("sensorcoolanttemp1");
         public static byte SensorCoolantTemp2 { get; set; } = GetPin("sensorcoolanttemp2");
         public static byte SensorElementAmperage { get; set; } = GetPin("sensorelementamperage");
         public static double TargetPressure { get; set; } = -5;
         public static double TgtPresHysteresisBuffer { get; set; } = 0.5;
-        public static string Units { get; set; } = "Imperial";
+        public static string Units { get; set; } = ConfigurationManager.AppSettings.Get("units");
         public static SqlConnection sqlconnection { get; set; } = new SqlConnection(ConfigurationManager.ConnectionStrings["LocalDB"].ConnectionString);
 
     }

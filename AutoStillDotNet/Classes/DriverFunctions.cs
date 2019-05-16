@@ -28,12 +28,20 @@ namespace AutoStillDotNet
         }
         public static void TurnOn(ArduinoDriver.ArduinoDriver driver, byte PinNumber) //This simplifies turning periphrials on when switching from dev to production and shortens the syntax for calling "On"
         {
+             driver.Send(new DigitalWriteRequest(PinNumber, DigitalValue.High)); 
+        }
+        public static void TurnOff(ArduinoDriver.ArduinoDriver driver, byte PinNumber)  //This simplifies turning periphrials on when switching from dev to production and shortens the syntax for calling "Off"
+        {
+             driver.Send(new DigitalWriteRequest(PinNumber, DigitalValue.Low)); 
+        }
+        public static void RelayOn(ArduinoDriver.ArduinoDriver driver, byte PinNumber) //This simplifies turning periphrials on when switching from dev to production and shortens the syntax for calling "On"
+        {
             if (ConfigurationManager.AppSettings.Get("InvertPinPolarity") == "False")
             { driver.Send(new DigitalWriteRequest(PinNumber, DigitalValue.High)); }
             else
             { driver.Send(new DigitalWriteRequest(PinNumber, DigitalValue.Low)); }
         }
-        public static void TurnOff(ArduinoDriver.ArduinoDriver driver, byte PinNumber)  //This simplifies turning periphrials on when switching from dev to production and shortens the syntax for calling "Off"
+        public static void RelayOff(ArduinoDriver.ArduinoDriver driver, byte PinNumber)  //This simplifies turning periphrials on when switching from dev to production and shortens the syntax for calling "Off"
         {
             if (ConfigurationManager.AppSettings.Get("InvertPinPolarity") == "True")
             { driver.Send(new DigitalWriteRequest(PinNumber, DigitalValue.High)); }

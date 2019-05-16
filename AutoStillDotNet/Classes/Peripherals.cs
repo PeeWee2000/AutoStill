@@ -32,7 +32,7 @@ namespace AutoStillDotNet
                     if (Regex.IsMatch(Value, @"Type=(\D+)OutputPin") == true)
                     {
                         DriverFunctions.SetOutput(driver, Convert.ToByte(Regex.Match(Value, @"(?<=Pin=)\d+").Value));
-                        if (ConfigurationManager.AppSettings.Get("InvertPinPolarity") == "True")
+                        if (ConfigurationManager.AppSettings.Get("InvertPinPolarity") == "True" && Regex.IsMatch(Value, @"Type=RelayOutputPin") == true)
                         {
                             driver.Send(new DigitalWriteRequest(Convert.ToByte(Regex.Match(Value, @"(?<=Pin=)\d+").Value), DigitalValue.High));
                         }
