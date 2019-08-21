@@ -9,3 +9,4 @@ Minimum hardware Requirements for actual usage
 2. 2 DPDT Relays
 3. 1 High Amperage SSR relay (Element or Gas Controller)
 4. 1 Mid amperage relay board
+5. 1 Thermocouple amplifier
