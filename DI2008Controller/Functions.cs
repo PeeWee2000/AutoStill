@@ -109,7 +109,7 @@ namespace DI2008Controller
 
                             var ChannelType = DI2008.CurrentConfig[i].ChannelConfiguration;
                             var ChannelName = DI2008.CurrentConfig[i].ChannelID.ToString();
-                            var ChannelData = new Data();
+                            var ChannelData = new AnalogData();
 
                             if (ChannelType.ToString().Contains("TC"))
                             {
