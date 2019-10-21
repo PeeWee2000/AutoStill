@@ -27,7 +27,6 @@ namespace AutoStillDotNet
 
         public static void InitializeDI2008()
         {
-            DI2008.Connect();
 
             DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
             DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
@@ -36,10 +35,10 @@ namespace AutoStillDotNet
             DI2008.Channels.Analog4 = ChannelConfiguration._100mv; // System Pressure
             DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
 
-            DI2008.Channels.Digital0 = ChannelConfiguration.DigitalIO; // Still Low Switch
-            DI2008.Channels.Digital1 = ChannelConfiguration.DigitalIO; // Still High Switch
-            DI2008.Channels.Digital2 = ChannelConfiguration.DigitalIO; // RV Low Switch
-            DI2008.Channels.Digital3 = ChannelConfiguration.DigitalIO; // RV High Swtich
+            DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
+            DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
+            DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
+            DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
             DI2008.ConfigureChannels();
             DI2008.Functions.StartAcquiringData();
