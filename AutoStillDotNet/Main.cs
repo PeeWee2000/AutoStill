@@ -20,11 +20,8 @@ namespace AutoStillDotNet
         private BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
         private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
 
-        //Note that after implementing these variables this way I found an article statin that using volatiles is not best practice but for the way this application is set up it isn't a show stopper
-        //since it isnt critical that I get the latest values and in practice the threads will only be updating values every couple of seconds rather than instantaneously
-        //https://stackoverflow.com/questions/72275/when-should-the-volatile-keyword-be-used-in-c
-        public static volatile bool Run = true; //Used to shut down or start the whole process
-        public static volatile int Phase = -1; //Used to control the main still control background worker and report progress -1 = initializing, 0 = filling still and checking values, 1 = heating / vacuuming, 2 = distilling, 3 = draining
+        public static bool Run = true; //Used to shut down or start the whole process
+        public static int Phase = -1; //Used to control the main still control background worker and report progress -1 = initializing, 0 = filling still and checking values, 1 = heating / vacuuming, 2 = distilling, 3 = draining
 
         //Varaiables written to and read by all the various loops -- Assume the still is empty and all periphrials are off when starting up
        
