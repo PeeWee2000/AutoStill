@@ -19,3 +19,4 @@ Hardware used in this project includes:
    - 4x Float switches - 2 per vessel
  
 
+![DaStill](https://github.com/PeeWee2000/AutoStill/blob/master/Setup.JPG)
