@@ -94,7 +94,6 @@ namespace AutoStillDotNet
             //Dispatcher to accept commands from the various background workers
             Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
 
-            //Instanciate the periphrial class and start up the arduino
             BackGroundWorkers.InitializeDI2008();
             //BackGroundWorkers.InitializeRelayBoard();
 
@@ -307,8 +306,9 @@ namespace AutoStillDotNet
                             PressureRegulator.CancelAsync();
                             //FanController1.CancelAsync();
                             //FanController2.CancelAsync();
-                            while (PressureRegulator.CancellationPending == true || FanController1.CancellationPending == true || FanController2.CancellationPending == true)
-                            { System.Threading.Thread.Sleep(100); }
+                            //while (PressureRegulator.CancellationPending == true || FanController1.CancellationPending == true || FanController2.CancellationPending == true)
+                                while (PressureRegulator.CancellationPending == true )
+                                { System.Threading.Thread.Sleep(100); }
 
 
                             //Fill the system with air so it is at a neutral pressure before pumping any fluids -- note that the system will pull air from the drain valve  
