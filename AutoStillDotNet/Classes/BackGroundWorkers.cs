@@ -1,11 +1,9 @@
-﻿using ArduinoDriver;
-using ArduinoDriver.SerialProtocol;
+﻿using DI2008Controller;
+using FTDIRelayController;
 using System;
 using System.ComponentModel;
-using System.Windows.Threading;
-using DI2008Controller;
-using FTDIRelayController;
 using System.Threading;
+using System.Windows.Threading;
 
 namespace AutoStillDotNet
 {
@@ -14,31 +12,54 @@ namespace AutoStillDotNet
     {
         private static BackgroundWorker SystemMonitor;  //Reads all the sensors and switches
         private static BackgroundWorker PressureWorker; //Determines when to turn the vaucuum pump on and off
-        private static BackgroundWorker StillController; //Turns the element, pumps and valves on and off
         //private static BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
         //private static BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
 
-        public static RelayController RelayBoard = new RelayController();
+        public static RelayController RelayController = new RelayController();
         
-        private static Thread DataReader;
         private static DI2008 DI2008 = new DI2008();
         private static ReadRecord DI2008Data = new ReadRecord();
 
 
+        public static void EnableRelay(int Device)
+        {
+            //RelayController.EnableRelay((int)Device);
+        }
+        public static void DisableRelay(int Device)
+        {
+            //RelayController.EnableRelay((int)Device);
+        }
+
         public static void InitializeDI2008()
         {
 
-            DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
-            DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
+            //DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
+            //DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
+            //DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
+            //DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
+            //DI2008.Channels.Analog4 = ChannelConfiguration._100mv; // System Pressure
+            //DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
+            //DI2008.Channels.Analog6 = ChannelConfiguration._100mv; 
+
+            //DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
+            //DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
+            //DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
+            //DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
+
+            ///////////////////////////////Dev Values//////////////////////////////////
+            DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
+            DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
             DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
             DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            DI2008.Channels.Analog4 = ChannelConfiguration._100mv; // System Pressure
+            DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
             DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
+            DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
 
             DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
             DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
             DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
             DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
+
 
             DI2008.ConfigureChannels();
             DI2008.Functions.StartAcquiringData();
@@ -46,7 +67,7 @@ namespace AutoStillDotNet
 
         public static void InitializeRelayBoard()
         {
-            RelayBoard.Initialize();
+            RelayController.Initialize();
         }
 
         public enum SwitchableDevices
@@ -84,22 +105,21 @@ namespace AutoStillDotNet
                     {
                         try
                         {
-                            lock (DI2008Data)
-                            {
-                                DI2008Data = DI2008.Functions.ReadData();
-                            }
-
+                            DI2008Data = DI2008.Functions.ReadData();
+                            
                             MainDispatcher.Invoke(new Action(() =>
                             {
-                                Main.ColumnTemp = DI2008Data.Analog0.Value.Value;
+                                //Main.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
+                                Main.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / 110), 2);
                                 Main.RefluxTemp = DI2008Data.Analog1.Value.Value;
                                 Main.CondensorTemp = DI2008Data.Analog2.Value.Value;
-                                Main.Pressure = DI2008Data.Analog4.Value.Value;
+                                //Main.Pressure = Math.Round((DI2008Data.Analog4.Value.Value / 728.15) - 15, 2);
+                                Main.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / 485) - 15, 2);
                                 Main.SystemAmperage = DI2008Data.Analog5.Value.Value;
-                                Main.StillEmpty = DI2008Data.Digital0.Value == 0 ? true : false;
-                                Main.StillFull = DI2008Data.Digital1.Value == 0 ? true : false;
-                                Main.RVEmpty = DI2008Data.Digital2.Value == 0 ? true : false;
-                                Main.RVFull = DI2008Data.Digital3.Value == 0 ? true : false;
+                                Main.StillEmpty = DI2008Data.Digital0.Value == DigtitalState.Low ? true : false;
+                                Main.StillFull = DI2008Data.Digital1.Value == DigtitalState.High ? true : false;
+                                Main.RVEmpty = DI2008Data.Digital2.Value == DigtitalState.High ? true : false;
+                                Main.RVFull = DI2008Data.Digital3.Value == DigtitalState.Low ? true : false;
                             }));
                             success = true;
                         }
@@ -112,17 +132,13 @@ namespace AutoStillDotNet
             return SystemMonitor;
         }
 
-        public static BackgroundWorker InitializeStillController(Dispatcher MainDispatcher)
-        {
-            return StillController;
-        }
-            public static BackgroundWorker InitializePressureWorker(Dispatcher MainDispatcher)
+        public static BackgroundWorker InitializePressureWorker(Dispatcher MainDispatcher)
         {
             PressureWorker = new BackgroundWorker();
             PressureWorker.WorkerSupportsCancellation = true;
             PressureWorker.DoWork += new DoWorkEventHandler((state, args) =>
             {                
-                RelayBoard.DisableRelay(SystemProperties.VacuumPump);
+                RelayController.DisableRelay(SystemProperties.VacuumPump);
                 Main.VacuumPumpOn = false;
                 do
                 {
@@ -134,7 +150,7 @@ namespace AutoStillDotNet
                         System.Threading.Thread.Sleep(1000);
                         if (Convert.ToDouble(Main.Pressure) > SystemProperties.TargetPressure && Main.VacuumPumpOn == false)
                         {
-                            RelayBoard.EnableRelay(SystemProperties.VacuumPump);
+                            RelayController.EnableRelay(SystemProperties.VacuumPump);
                             Main.VacuumPumpOn = true;
 
                             //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
@@ -145,7 +161,7 @@ namespace AutoStillDotNet
                             while (Convert.ToDouble(Main.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureWorker.CancellationPending == false);
 
                             //Once the pressure has reached its target turn the pump off
-                            RelayBoard.DisableRelay(SystemProperties.VacuumPump);
+                            RelayController.DisableRelay(SystemProperties.VacuumPump);
                             Main.VacuumPumpOn = false;
                         }
                     }

@@ -80,4 +80,9 @@
         Yellow = 6,
         White = 7
     }
+    public enum DigtitalState
+    {
+        Low = 0,
+        High = 1
+    }
 }

@@ -63,6 +63,14 @@
             this.manualToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRescan = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.lblStillLowSwitch = new System.Windows.Forms.Label();
+            this.lblStillHighSwitch = new System.Windows.Forms.Label();
+            this.lblRVLowSwitch = new System.Windows.Forms.Label();
+            this.lblRVHighSwtich = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chartRun)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
@@ -99,7 +107,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 418);
+            this.label3.Location = new System.Drawing.Point(12, 435);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(74, 13);
             this.label3.TabIndex = 3;
@@ -192,7 +200,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(16, 435);
+            this.label12.Location = new System.Drawing.Point(12, 448);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(74, 13);
             this.label12.TabIndex = 13;
@@ -201,7 +209,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(13, 448);
+            this.label13.Location = new System.Drawing.Point(12, 463);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(89, 13);
             this.label13.TabIndex = 14;
@@ -342,12 +350,92 @@
             this.btnRescan.UseVisualStyleBackColor = true;
             this.btnRescan.Click += new System.EventHandler(this.btnScan_Click);
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(12, 485);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(87, 13);
+            this.label8.TabIndex = 20;
+            this.label8.Text = "Still Low Switch: ";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(12, 498);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(89, 13);
+            this.label9.TabIndex = 21;
+            this.label9.Text = "Still High Switch: ";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(12, 511);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(153, 13);
+            this.label10.TabIndex = 22;
+            this.label10.Text = "Receiving Vessel Low Switch: ";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(12, 524);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(155, 13);
+            this.label11.TabIndex = 23;
+            this.label11.Text = "Receiving Vessel High Switch: ";
+            // 
+            // lblStillLowSwitch
+            // 
+            this.lblStillLowSwitch.AutoSize = true;
+            this.lblStillLowSwitch.Location = new System.Drawing.Point(96, 485);
+            this.lblStillLowSwitch.Name = "lblStillLowSwitch";
+            this.lblStillLowSwitch.Size = new System.Drawing.Size(32, 13);
+            this.lblStillLowSwitch.TabIndex = 24;
+            this.lblStillLowSwitch.Text = "State";
+            // 
+            // lblStillHighSwitch
+            // 
+            this.lblStillHighSwitch.AutoSize = true;
+            this.lblStillHighSwitch.Location = new System.Drawing.Point(96, 498);
+            this.lblStillHighSwitch.Name = "lblStillHighSwitch";
+            this.lblStillHighSwitch.Size = new System.Drawing.Size(32, 13);
+            this.lblStillHighSwitch.TabIndex = 25;
+            this.lblStillHighSwitch.Text = "State";
+            // 
+            // lblRVLowSwitch
+            // 
+            this.lblRVLowSwitch.AutoSize = true;
+            this.lblRVLowSwitch.Location = new System.Drawing.Point(171, 511);
+            this.lblRVLowSwitch.Name = "lblRVLowSwitch";
+            this.lblRVLowSwitch.Size = new System.Drawing.Size(32, 13);
+            this.lblRVLowSwitch.TabIndex = 26;
+            this.lblRVLowSwitch.Text = "State";
+            // 
+            // lblRVHighSwtich
+            // 
+            this.lblRVHighSwtich.AutoSize = true;
+            this.lblRVHighSwtich.Location = new System.Drawing.Point(171, 524);
+            this.lblRVHighSwtich.Name = "lblRVHighSwtich";
+            this.lblRVHighSwtich.Size = new System.Drawing.Size(32, 13);
+            this.lblRVHighSwtich.TabIndex = 27;
+            this.lblRVHighSwtich.Text = "State";
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.ClientSize = new System.Drawing.Size(1549, 629);
+            this.Controls.Add(this.lblRVHighSwtich);
+            this.Controls.Add(this.lblRVLowSwitch);
+            this.Controls.Add(this.lblStillHighSwitch);
+            this.Controls.Add(this.lblStillLowSwitch);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.btnRescan);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.chartRun);
@@ -416,6 +504,14 @@
         private System.Windows.Forms.ToolStripMenuItem manualToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.Button btnRescan;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label lblStillLowSwitch;
+        private System.Windows.Forms.Label lblStillHighSwitch;
+        private System.Windows.Forms.Label lblRVLowSwitch;
+        private System.Windows.Forms.Label lblRVHighSwtich;
     }
 }
 

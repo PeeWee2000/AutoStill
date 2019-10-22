@@ -7,11 +7,7 @@
         public string Unit { get; set; }
     }
 
-    public enum DigtitalState
-    {
-        Low = 0,
-        High = 1
-    }
+
 
 
     /// <summary>

@@ -1,12 +1,10 @@
 ﻿using System;
-using ArduinoDriver;
-using ArduinoDriver.SerialProtocol;
-using System.Windows.Forms;
-using System.Data;
-using System.Windows.Threading;
 using System.ComponentModel;
-using System.Windows.Forms.DataVisualization.Charting;
+using System.Data;
 using System.Drawing;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
+using System.Windows.Threading;
 
 namespace AutoStillDotNet
 {
@@ -98,7 +96,7 @@ namespace AutoStillDotNet
 
             //Instanciate the periphrial class and start up the arduino
             BackGroundWorkers.InitializeDI2008();
-            BackGroundWorkers.InitializeRelayBoard();
+            //BackGroundWorkers.InitializeRelayBoard();
 
 
             //Declare the background workers
@@ -136,12 +134,12 @@ namespace AutoStillDotNet
                             {
                                 //Open the inlet valve and turn the inlet pump on
                                 //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.StillFillValve); }));
-                                BackGroundWorkers.RelayBoard.EnableRelay(SystemProperties.StillFillValve);
+                                BackGroundWorkers.EnableRelay(SystemProperties.StillFillValve);
                                 StillValveOpen = true;
                                 //Wait 3 seconds for the valve to open
                                 System.Threading.Thread.Sleep(3000);
                                 //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.StillFluidPump); }));
-                                BackGroundWorkers.RelayBoard.EnableRelay(SystemProperties.StillFluidPump);
+                                BackGroundWorkers.EnableRelay(SystemProperties.StillFluidPump);
                                 MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Still"; }));
                                 StillPumpOn = true;
 
@@ -153,11 +151,11 @@ namespace AutoStillDotNet
                                 }
                                 //Close the valve and turn off the pump
                                 //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillFillValve); }));
-                                BackGroundWorkers.RelayBoard.DisableRelay(SystemProperties.StillFillValve);
+                                BackGroundWorkers.DisableRelay(SystemProperties.StillFillValve);
 
                                 StillValveOpen = false;
                                 //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillFluidPump); }));
-                                BackGroundWorkers.RelayBoard.DisableRelay(SystemProperties.StillFluidPump);
+                                BackGroundWorkers.DisableRelay(SystemProperties.StillFluidPump);
 
                                 MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Filling Complete"; }));
 
@@ -173,7 +171,7 @@ namespace AutoStillDotNet
                         {
                             //Turn on the element and vacuum pump
                             //DriverFunctions.TurnOn(driver, SystemProperties.StillElement);
-                            BackGroundWorkers.RelayBoard.EnableRelay(SystemProperties.StillElement);
+                            BackGroundWorkers.EnableRelay(SystemProperties.StillElement);
 
                             ElementOn = true;
                             PressureRegulator.RunWorkerAsync();
@@ -292,7 +290,7 @@ namespace AutoStillDotNet
                             //Batch complete!
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Batch Complete, Saving Run Data"; }));
                             //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillElement); }));
-                            BackGroundWorkers.RelayBoard.DisableRelay(SystemProperties.StillElement);
+                            BackGroundWorkers.DisableRelay(SystemProperties.StillElement);
 
                             ElementOn = false;
                             Phase = 3;
@@ -316,13 +314,13 @@ namespace AutoStillDotNet
                             //Fill the system with air so it is at a neutral pressure before pumping any fluids -- note that the system will pull air from the drain valve  
                             //since it eventually vents somewhere that is at atmospheric pressure
                             //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.StillDrainValve); }));
-                            BackGroundWorkers.RelayBoard.EnableRelay(SystemProperties.StillDrainValve);
+                            BackGroundWorkers.EnableRelay(SystemProperties.StillDrainValve);
 
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Still"; }));
                             while (StillEmpty == false || Convert.ToDouble(Pressure) <= -0.2)
                             { System.Threading.Thread.Sleep(1500); }
                             //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.StillDrainValve); }));
-                            BackGroundWorkers.RelayBoard.DisableRelay(SystemProperties.StillDrainValve);
+                            BackGroundWorkers.DisableRelay(SystemProperties.StillDrainValve);
 
                             System.Threading.Thread.Sleep(3000);
 
@@ -331,11 +329,11 @@ namespace AutoStillDotNet
                             MainDispatcher.Invoke(new Action(() => { lblStatus.Text = "Draining Distillate"; }));
                             //MainDispatcher.Invoke(new Action(() => { RVEmpty = (driver.Send(new DigitalReadRequest(SystemProperties.RVEmptySwitch)).PinValue == DigitalValue.Low) ? true : false; }));
                             //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.RVDrainValve); }));
-                            BackGroundWorkers.RelayBoard.EnableRelay(SystemProperties.RVDrainValve);
+                            BackGroundWorkers.EnableRelay(SystemProperties.RVDrainValve);
 
                             System.Threading.Thread.Sleep(3000); //3 second delay so the valve has time to open
                             //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOn(driver, SystemProperties.RVFluidPump); }));
-                            BackGroundWorkers.RelayBoard.EnableRelay(SystemProperties.RVFluidPump);
+                            BackGroundWorkers.EnableRelay(SystemProperties.RVFluidPump);
 
                             while (RVEmpty == false)
                             {
@@ -345,8 +343,8 @@ namespace AutoStillDotNet
                             //Turn off the pump and shut the valves and give them 3 seconds to close
                             //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.RVFluidPump); }));
                             //MainDispatcher.Invoke(new Action(() => { DriverFunctions.RelayOff(driver, SystemProperties.RVDrainValve); }));
-                            BackGroundWorkers.RelayBoard.DisableRelay(SystemProperties.RVFluidPump);
-                            BackGroundWorkers.RelayBoard.DisableRelay(SystemProperties.RVDrainValve);
+                            BackGroundWorkers.DisableRelay(SystemProperties.RVFluidPump);
+                            BackGroundWorkers.DisableRelay(SystemProperties.RVDrainValve);
 
 
                             Phase = 0;
@@ -368,8 +366,15 @@ namespace AutoStillDotNet
                 do
                 {
                     System.Threading.Thread.Sleep(1000);
-                    MainDispatcher.Invoke(new Action(() => { lblPressure.Text = Main.Pressure + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI"); }));
-                    MainDispatcher.Invoke(new Action(() => { lblTemp1.Text = Main.ColumnTemp + ((SystemProperties.Units == "Metric") ? "°C" : "°F"); }));
+                    MainDispatcher.Invoke(new Action(() => { 
+                        lblPressure.Text = Main.Pressure + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI");
+                        lblTemp1.Text = Main.ColumnTemp + ((SystemProperties.Units == "Metric") ? "°C" : "°F");
+                        lblStillLowSwitch.Text = Main.StillEmpty.ToString();
+                        lblStillHighSwitch.Text = Main.StillFull.ToString();
+                        lblRVLowSwitch.Text = Main.RVEmpty.ToString();
+                        lblRVHighSwtich.Text = Main.RVFull.ToString();
+
+                    }));
                 }
                 while (true);
             });
