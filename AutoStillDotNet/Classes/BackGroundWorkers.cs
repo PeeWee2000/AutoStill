@@ -23,11 +23,11 @@ namespace AutoStillDotNet
 
         public static void EnableRelay(int Device)
         {
-            //RelayController.EnableRelay((int)Device);
+            RelayController.EnableRelay(Device);
         }
         public static void DisableRelay(int Device)
         {
-            //RelayController.EnableRelay((int)Device);
+            RelayController.EnableRelay(Device);
         }
 
         public static void InitializeDI2008()
