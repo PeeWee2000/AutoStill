@@ -50,9 +50,9 @@
         Digital1 = 9,
         Digital2 = 10,
         Digital3 = 11,
-        Digital4 = 13,
-        Digital5 = 14,
-        Digital6 = 15
+        Digital4 = 12,
+        Digital5 = 13,
+        Digital6 = 14
     }
     public enum ScanRate
     {
@@ -79,10 +79,5 @@
         Magenta = 5,
         Yellow = 6,
         White = 7
-    }
-    public enum DigtitalState
-    {
-        Low = 0,
-        High = 1
     }
 }

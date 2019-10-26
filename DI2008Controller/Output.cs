@@ -3,11 +3,15 @@
     public struct Data
     {
         public ChannelConfiguration ChannelConfiguration { get; set; }
-        public double Value { get; set; }
+        public decimal Value { get; set; }
         public string Unit { get; set; }
     }
 
-
+    public enum DigtitalState
+    {
+        Low = 0,
+        High = 1
+    }
 
 
     /// <summary>
@@ -32,6 +36,5 @@
         public DigtitalState? Digital4 { get; set; }
         public DigtitalState? Digital5 { get; set; }
         public DigtitalState? Digital6 { get; set; }
-        public int DigitalStates { get; set; }
     }
 }

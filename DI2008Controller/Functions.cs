@@ -1,5 +1,6 @@
 ﻿using LibUsbDotNet.Main;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace DI2008Controller
     public class Functions
     {
         private ReadRecord Data = new ReadRecord();
+        private int CurrentDigitalStates = 0;
 
         public void StopAcquiringData()
         {
@@ -36,6 +38,51 @@ namespace DI2008Controller
             WriteASCII(Command);
         }
 
+        public void EnableChannel(ChannelID Channel)
+        {
+            if (Channel.ToString().Contains("Digital"))
+            {
+                if (Data.Analog0 != null)
+                {
+                    int ActualChannelID = (int)Channel - 7;
+                    int Command = CurrentDigitalStates;
+
+                    int BitPosition = 1;
+                    for (int i = 1; i < ActualChannelID; i++)
+                    { BitPosition *= 2; }
+
+                    Command = (byte)(Command & BitPosition);
+                    if (Command < 128)
+                    { 
+                        Write("dout " + Command);
+                    }
+                }
+            }
+        }
+
+        public void DisableChannel(ChannelID Channel)
+        {
+            if (Channel.ToString().Contains("Digital"))
+            {
+                if (Data.Analog0 != null)
+                {
+                    int ActualChannelID = (int)Channel - 7;
+                 
+
+                    int BitPosition = 1;
+                    for (int i = 1; i < ActualChannelID; i++)
+                    { BitPosition *= 2; }
+
+                    if (BitPosition < CurrentDigitalStates)
+                    {
+                        int Command = CurrentDigitalStates - BitPosition;
+
+                        Write("dout " + Command);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Write an ASCII command directly to the DI2008 and return the response, if any.
         /// </summary>
@@ -47,13 +94,8 @@ namespace DI2008Controller
             { 
                 var Response = ReadBytes();
 
-                var TrimmedOutput = Encoding.ASCII.GetString(Response);
-                TrimmedOutput = TrimmedOutput.Replace(Command, "");
-                string Output;
-                if (TrimmedOutput.Length == 0)
-                { Output = Encoding.ASCII.GetString(Response); }
-                else { Output = TrimmedOutput; }
-
+                var Output = Encoding.ASCII.GetString(Response);
+              
                 Output = Output.Replace("\0", "");
                 Output = Output.Replace("\r", "");
 
@@ -102,23 +144,12 @@ namespace DI2008Controller
 
         private void ProcessReceievedData(object sender, EndpointDataEventArgs e)
         {
-            byte[] BytesReceived = e.Buffer.Take(16).ToArray();
+            byte[] BytesReceived = e.Buffer.Take(32).ToArray();
             
-
             string Value = Encoding.ASCII.GetString(BytesReceived);
             List<Tuple<int, int>> ADCValues = new List<Tuple<int, int>>();
 
-            if (Value.Contains("din ")) //Sometimes the dataq spits out a random digital read, rather than ignoring it this makes use of it
-            {
-                string DinNumber = Regex.Match(Value, @"\d+").Value;
-                int Status = Convert.ToInt32(DinNumber);
-                WriteDigitalValues(Status);
-
-            }
-            else if (BytesReceived.Count() > 15) //Errors or non-data reads are always less than 16 bytes
-            { ADCValues = Calculations.ConvertToADCValues(BytesReceived); }
-
-
+            ADCValues = Calculations.ConvertToADCValues(BytesReceived); 
 
             if (ADCValues.Count == DI2008.EnabledAnalogChannels + 1) //+1 is for the Digital Channel readout
             {
@@ -150,7 +181,7 @@ namespace DI2008Controller
         {
             for (int i = 0; i < DI2008.EnabledAnalogChannels; i -= -1)
             {
-                double ActualValue = 0;
+                decimal ActualValue = 0;
 
                 var ChannelType = DI2008.CurrentConfig[i].ChannelConfiguration;
                 var ChannelName = DI2008.CurrentConfig[i].ChannelID.ToString();
@@ -180,7 +211,7 @@ namespace DI2008Controller
 
         private void WriteDigitalValues(int DigitalStatusByte)
         {
-            Data.GetType().GetProperty("DigitalStates").SetValue(Data, DigitalStatusByte);
+            CurrentDigitalStates = DigitalStatusByte;
             var DigitalReadings = Calculations.GetDigitalChannelStates(DigitalStatusByte);
             foreach (var ChannelState in DigitalReadings)
             {
