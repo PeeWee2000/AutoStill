@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoStillDotNet", "AutoStil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DI2008Controller", "DI2008Controller\DI2008Controller.csproj", "{86050A88-FB95-4E4C-9156-922DD00B6FAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RelayController", "RelayController\RelayController.csproj", "{93B76A10-B958-453B-AB7B-38A12E2634F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,26 @@ Global
 		{86050A88-FB95-4E4C-9156-922DD00B6FAA}.Release|x64.Build.0 = Release|Any CPU
 		{86050A88-FB95-4E4C-9156-922DD00B6FAA}.Release|x86.ActiveCfg = Release|Any CPU
 		{86050A88-FB95-4E4C-9156-922DD00B6FAA}.Release|x86.Build.0 = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|ARM.Build.0 = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|x64.Build.0 = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Debug|x86.Build.0 = Debug|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|ARM.ActiveCfg = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|ARM.Build.0 = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|ARM64.Build.0 = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|x64.ActiveCfg = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|x64.Build.0 = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|x86.ActiveCfg = Release|Any CPU
+		{93B76A10-B958-453B-AB7B-38A12E2634F9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

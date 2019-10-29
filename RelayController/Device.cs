@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace FTDIRelayController
+namespace RelayController
 {
-    public class RelayController
+    public class RelayBoard
     {
         public static FTDI myFtdiDevice = new FTDI();
         public static FTDI.FT_STATUS ftStatus;
@@ -16,10 +16,9 @@ namespace FTDIRelayController
         public static int TotalBits = (int)Math.Pow(2, Relays) - 1;
 
 
-        public void Initialize()
+        public RelayBoard()
         {
-            FTDI.FT_DEVICE_INFO_NODE[] fT_DEVICE_INFO_NODEs = new FTDI.FT_DEVICE_INFO_NODE[64];
-            var Waef = myFtdiDevice.GetDeviceList(fT_DEVICE_INFO_NODEs);
+
             //Get serial number of device with index 0
             ftStatus = myFtdiDevice.OpenByIndex(0);
             if (ftStatus != FTDI.FT_STATUS.FT_OK)
@@ -44,12 +43,42 @@ namespace FTDIRelayController
             {
                 return;
             }
-        }
 
+
+            for (int i = 0; i <= 8; i++)
+            { DisableRelay(i); }
+
+
+            //int x = 1;
+            //while (true)
+            //{
+
+            //    while(x <= 8)
+            //    { 
+            //        EnableRelay(x);
+            //        x++;
+            //    }
+            //    x = 1;
+            //    Thread.Sleep(250);
+
+            //    while (x <= 8)
+            //    { 
+            //    DisableRelay(x);
+            //        x++;
+            //    }
+
+            //    x = 1;
+            //    Thread.Sleep(250);
+            //}
+
+
+
+
+        }
 
         public void EnableRelay(int RelayID)
         {
-            Command[0] = (byte)(Command[0] | GetBitPosition(RelayID));
+            Command[0] = (byte)(Command[0]  | GetBitPosition(RelayID));
             myFtdiDevice.Write(Command, 1, ref receivedBytes);
 
 
@@ -81,5 +110,6 @@ namespace FTDIRelayController
                 BitMultiplier *= 2;
             }
         }
+
     }
 }

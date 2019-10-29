@@ -32,6 +32,7 @@ namespace AutoStillDotNet
         public static byte RVFullSwitch { get; set; } = GetPin("rvfullswitch");
         public static byte RVEmptySwitch { get; set; } = GetPin("rvemptyswitch");
         public static byte VacuumPump { get; set; } = GetPin("vacuumpump");
+        public static byte CoolantPump { get; set; } = GetPin("coolantpump");
         public static byte FanController1 { get; set; } = GetPin("fancontroller1");
         public static byte FanController2 { get; set; } = GetPin("fancontroller2");
         public static byte SensorPressure { get; set; } = GetPin("sensorpressure");

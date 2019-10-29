@@ -16,38 +16,17 @@ namespace AutoStillDotNet
     {
         private BackgroundWorker SystemMonitor;  //Reads all the sensors and switches
         private BackgroundWorker UIUpdater;  //Updates the UI to reflect current sensor values
-        private BackgroundWorker ElementController; //Turns the element on and off to prevent overloading of the reflux column and condensor
+        //private BackgroundWorker ElementController; //Turns the element on and off to prevent overloading of the reflux column and condensor
         private BackgroundWorker PressureRegulator; //Determines when to turn the vaucuum pump on and off
         private BackgroundWorker StillController; //Turns the element, pumps and valves on and off
-        private BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
-        private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
+        //private BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
+        //private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
 
-        public static bool Run = true; //Used to shut down or start the whole process
-        public static int Phase = -1; //Used to control the main still control background worker and report progress -1 = initializing, 0 = filling still and checking values, 1 = heating / vacuuming, 2 = distilling, 3 = draining
+        
         public static int RefreshRate = 250; //Refresh rate of data collection in milliseconds
-                                             //Varaiables written to and read by all the various loops -- Assume the still is empty and all periphrials are off when starting up
-
-        public static Variables CurrentState = new Variables();
+                                             
+        public static Variables CurrentState = new Variables(); //Varaiables written to and read by all the various loops -- Assume the still is empty and all periphrials are off when starting up
         public static List<RunRecord> CurrentRun = new List<RunRecord>();
-
-        public static decimal ColumnTemp;
-        public static decimal Pressure;
-        public static decimal? RefluxTemp;
-        public static decimal? CondensorTemp;
-        public static decimal? SystemAmperage;
-        public static bool StillEmpty = true;
-        public static bool StillFull = false;
-        public static bool ElementOn = false;
-        public static bool VacuumPumpOn = false;
-        public static bool StillPumpOn = false;
-        public static bool StillValveOpen = false;
-        public static bool RVPumpOn = false;
-        public static bool RVValveOpen = false;
-        public static bool RVFull = true;
-        public static bool RVEmpty = false;
-        public static decimal RVWeight = 0;
-        public static decimal PlateauTemp;
-
 
 
         public Main()
@@ -107,8 +86,7 @@ namespace AutoStillDotNet
             //FanController1 = BackGroundWorkers.InitializeFanController1(driver, MainDispatcher);
             //FanController2 = BackGroundWorkers.InitializeFanController2(driver, MainDispatcher);
 
-            DataTable StillStats = Statistics.InitializeTable();
-            chartRun.DataSource = StillStats;
+            //chartRun.DataSource = StillStats;
 
             StillController = new BackgroundWorker();
             StillController.WorkerSupportsCancellation = true;
@@ -119,31 +97,31 @@ namespace AutoStillDotNet
                 {
                     DateTime RunStart = DateTime.Now;
 
-                    if (Run != true)
+                    if (CurrentState.Run != true)
                     { break; }
 
-                    while (ColumnTemp == 0)
+                    while (CurrentState.ColumnTemp == 0)
                     { Thread.Sleep(250); }
 
 
                     FillStill();
-                    Phase = 1;
+                    CurrentState.Phase = 1;
 
                     HeatUntilPlateau();
-                    Phase = 2;
+                    CurrentState.Phase = 2;
 
                     Distill();
-                    Phase = 3;
+                    CurrentState.Phase = 3;
 
                     DrainVessels();
 
 
-                    Statistics.CreateHeader(RunStart, DateTime.Now, true, SystemProperties.Units);
-                    Statistics.SaveRun(StillStats, RunStart);
+                    var Context = new StillStatsEntities();
+                    Context.RunRecords.AddRange(CurrentRun);
                     CurrentRun.Clear();
-                    StillStats.Clear();
+                    //StillStats.Clear();
 
-                    Phase = 0;
+                    CurrentState.Phase = 0;
                 }
             });
 
@@ -175,20 +153,27 @@ namespace AutoStillDotNet
             var Data = new RunRecord
             {
                 rrTime = DateTime.Now,
-                rrTemp = ColumnTemp,
+                rrTemp = CurrentState.ColumnTemp,
                 rrPressure = CurrentState.Pressure,
-                rrPhase = Phase,
-                rrAmperage = SystemAmperage,
-                rrRefluxTemperature = RefluxTemp,
-                rrCondensorTemperature = CondensorTemp
+                rrPhase = CurrentState.Phase,
+                rrAmperage = CurrentState.SystemAmperage,
+                rrRefluxTemperature = CurrentState.RefluxTemp,
+                rrCondensorTemperature = CurrentState.CondensorTemp
             };
 
             if (CurrentRun.Count < 2)
             { Data.rrTempDelta = 0; }
             else
-            { Data.rrTempDelta = ColumnTemp - CurrentRun.LastOrDefault().rrTemp; }
+            { Data.rrTempDelta = CurrentState.ColumnTemp - CurrentRun.LastOrDefault().rrTemp; }
 
             CurrentRun.Add(Data);
+
+            //lock (StillStats)
+            //{
+            //    var GraphData = ConvertEntityToRow(Data);
+            //    StillStats.Rows.Add(GraphData);                
+            //}
+
             return Data;
         }
 
@@ -203,7 +188,7 @@ namespace AutoStillDotNet
                 
                 while (true)
                 {
-                    switch (Phase)
+                    switch (CurrentState.Phase)
                     {
                         case 0:
                             Status = "Filling Still";
@@ -222,17 +207,15 @@ namespace AutoStillDotNet
                             break;
                     }
 
-
-
                     MainDispatcher.Invoke(new Action(() => {
-                        lblPressure.Text = Main.Pressure + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI");
-                        lblTemp1.Text = Main.ColumnTemp + ((SystemProperties.Units == "Metric") ? "°C" : "°F");
-                        lblStillLowSwitch.Text = Main.StillEmpty.ToString();
-                        lblStillHighSwitch.Text = Main.StillFull.ToString();
-                        lblRVLowSwitch.Text = Main.RVEmpty.ToString();
-                        lblRVHighSwtich.Text = Main.RVFull.ToString();
+                        lblPressure.Text = CurrentState.Pressure + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI");
+                        lblTemp1.Text = CurrentState.ColumnTemp + ((SystemProperties.Units == "Metric") ? "°C" : "°F");
+                        lblStillLowSwitch.Text = CurrentState.StillEmpty.ToString();
+                        lblStillHighSwitch.Text = CurrentState.StillFull.ToString();
+                        lblRVLowSwitch.Text = CurrentState.RVEmpty.ToString();
+                        lblRVHighSwtich.Text = CurrentState.RVFull.ToString();
                         lblStatus.Text = Status;
-                        chartRun.DataBind();
+                        chartRun.DataBind(); 
                     }));
                     Thread.Sleep(RefreshRate);
                 }
@@ -245,20 +228,20 @@ namespace AutoStillDotNet
         public void FillStill()
         {
             BackGroundWorkers.EnableRelay(SystemProperties.StillFillValve);
-            StillValveOpen = true;
+            CurrentState.StillValveOpen = true;
             Thread.Sleep(3000); //Wait 3 seconds for the valve to open
 
             BackGroundWorkers.EnableRelay(SystemProperties.StillFluidPump);
-            StillPumpOn = true;
+            CurrentState.StillPumpOn = true;
 
-            while (StillFull == false)
+            while (CurrentState.StillFull == false)
             { Thread.Sleep(RefreshRate); }
 
             BackGroundWorkers.DisableRelay(SystemProperties.StillFillValve);
-            StillValveOpen = false;
+            CurrentState.StillValveOpen = false;
 
             BackGroundWorkers.DisableRelay(SystemProperties.StillFluidPump);
-            StillPumpOn = false;
+            CurrentState.StillPumpOn = false;
         }
 
         public void HeatUntilPlateau()
@@ -266,11 +249,11 @@ namespace AutoStillDotNet
             RecordCurrentState();
 
             BackGroundWorkers.EnableRelay(SystemProperties.StillElement);
-            ElementOn = true;
+            CurrentState.ElementOn = true;
 
             PressureRegulator.RunWorkerAsync();
 
-            PlateauTemp = 0;
+            CurrentState.PlateauTemp = 0;
             decimal StartTemp = CurrentRun.First().rrTemp;
             decimal LastDelta = 0M;
             decimal TotalDelta = 0M;
@@ -280,18 +263,18 @@ namespace AutoStillDotNet
             //FanController2.RunWorkerAsync();
 
 
-            while (ColumnTemp <= StartTemp * 1.1M && CurrentRun.Count < 20)
+            while (CurrentState.StillEmpty == false &&  CurrentState.RVFull == false && CurrentState.ColumnTemp <= StartTemp * 1.1M || CurrentRun.Count < 20)
             {
-                if (ColumnTemp > StartTemp)
+                if (CurrentState.ColumnTemp > StartTemp)
                 {
                     RecordCurrentState();
                 }
                 Thread.Sleep(RefreshRate);
             }
 
-            while ((StillEmpty == false && LastDelta >= 0.02M) || TotalDelta < 0.25M)
+            while ((CurrentState.StillEmpty == false && CurrentState.RVFull == false && LastDelta >= 0.02M) || TotalDelta < 0.25M)
             {
-               decimal Temp1 = CurrentRun[CurrentRun.Count].rrTemp;
+               decimal Temp1 = CurrentRun[CurrentRun.Count - 1].rrTemp;
                decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrTemp;
 
                 LastDelta = Temp2 != 0 ? ((Temp2 - Temp1) / Temp2) : 0;
@@ -304,11 +287,13 @@ namespace AutoStillDotNet
 
         public void Distill()
         {
-            PlateauTemp = CurrentRun.Last().rrTemp;
+            CurrentState.PlateauTemp = CurrentRun.Last().rrTemp;
+            BackGroundWorkers.EnableRelay(SystemProperties.CoolantPump);
+
 
             //Once the first plateau is reached allowing for a 4 degree change at the most
             //or end the batch if the saftey limit switch is triggered also reset the Delta counters so the next step is not skipped
-            while (StillEmpty == false && (CurrentRun.Last().rrTemp - PlateauTemp) < 5 && RVFull == false)
+            while (CurrentState.StillEmpty == false && CurrentState.RVFull == false && (CurrentRun.Last().rrTemp - CurrentState.PlateauTemp) < 5 )
             {
                 decimal Temp1 = CurrentRun.Last().rrTemp;
                 decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrTemp;
@@ -321,8 +306,7 @@ namespace AutoStillDotNet
             }
 
             BackGroundWorkers.DisableRelay(SystemProperties.StillElement);
-
-            ElementOn = false;
+            CurrentState.ElementOn = false;
         }
 
         public void DrainVessels()
@@ -339,7 +323,7 @@ namespace AutoStillDotNet
             //since it eventually vents somewhere that is at atmospheric pressure
             BackGroundWorkers.EnableRelay(SystemProperties.StillDrainValve);
 
-            while (StillEmpty == false || Convert.ToDouble(Pressure) <= -0.2)
+            while (CurrentState.StillEmpty == false ||CurrentState.Pressure <= -0.2M)
             { Thread.Sleep(RefreshRate); }
 
             BackGroundWorkers.DisableRelay(SystemProperties.StillDrainValve);
@@ -351,12 +335,26 @@ namespace AutoStillDotNet
             Thread.Sleep(3000); //3 second delay so the valve has time to open
             BackGroundWorkers.EnableRelay(SystemProperties.RVFluidPump);
 
-            while (RVEmpty == false)
+            while (CurrentState.RVEmpty == false)
             {
                 Thread.Sleep(RefreshRate);
             }
             BackGroundWorkers.DisableRelay(SystemProperties.RVFluidPump);
             BackGroundWorkers.DisableRelay(SystemProperties.RVDrainValve);
         }
+
+        //public static DataRow ConvertEntityToRow(RunRecord RunRecord)
+        //{
+        //    DataRow row = StillStats.NewRow();
+
+        //    row["Time"] = RunRecord.rrTime;
+        //    row["Temperature"] = RunRecord.rrTemp;
+        //    row["Pressure"] = RunRecord.rrPressure;
+        //    row["Amperage"] = RunRecord.rrAmperage;
+        //    row["RefluxTemperature"] = RunRecord.rrRefluxTemperature;
+        //    row["CondensorTemperature"] = RunRecord.rrCondensorTemperature;
+
+        //    return row;
+        //}
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DI2008Controller
 {
@@ -20,7 +21,7 @@ namespace DI2008Controller
                 
 
 
-                //This is inefficent and causes good reads to be ignored when there are less than 7 channels enabled, if you need higher frequency readings this will need to be optimized
+                //This is inefficent and causes good reads to be ignored  if you need higher frequency readings this will need to be optimized
                 if (ADCValues.Count <= DI2008.EnabledAnalogChannels)
                 { 
                     if (CurrentChannel < DI2008.EnabledAnalogChannels && CurrentChannel >= 0)
@@ -47,7 +48,21 @@ namespace DI2008Controller
         }
         public static decimal ConvertADCtoVoltage(int ADC, ChannelConfiguration ChannelType)
         {
-            return ADC / 120;
+            int MaxPossibleADC = 32767;
+            decimal ChannelRange;
+            decimal Divisor;
+            decimal Voltage = 0;
+
+            if ((int)ChannelType <= 12)
+            {
+                ChannelRange = Convert.ToDecimal(Regex.Match(ChannelType.ToString(), @"\d+").Value);
+
+                Divisor = MaxPossibleADC / ChannelRange;
+
+                Voltage = ADC / Divisor;
+            }
+
+            return Voltage;
         }
         public static decimal ConvertADCtoCelsius(int ADC, ChannelConfiguration ThermocoupleType)
         {

@@ -61,10 +61,6 @@
     <Reference Include="FTD2XX_NET, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FTD2XX.Net.1.0.14\lib\FTD2XX_NET.dll</HintPath>
     </Reference>
-    <Reference Include="FTDIRelayController, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FTDIRelayController\bin\Debug\netstandard2.0\FTDIRelayController.dll</HintPath>
-    </Reference>
     <Reference Include="LibUsbDotNet.LibUsbDotNet, Version=2.2.0.0, Culture=neutral, PublicKeyToken=c677239abe1e02a9, processorArchitecture=MSIL">
       <HintPath>..\packages\LibUsbDotNet.2.2.29\lib\net45\LibUsbDotNet.LibUsbDotNet.dll</HintPath>
     </Reference>
@@ -187,6 +183,10 @@
     <ProjectReference Include="..\DI2008Controller\DI2008Controller.csproj">
       <Project>{86050a88-fb95-4e4c-9156-922dd00b6faa}</Project>
       <Name>DI2008Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RelayController\RelayController.csproj">
+      <Project>{93b76a10-b958-453b-ab7b-38a12e2634f9}</Project>
+      <Name>RelayController</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

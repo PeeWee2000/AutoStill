@@ -1,5 +1,4 @@
-﻿
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
 using System;
 
@@ -13,15 +12,6 @@ namespace AutoStillDotNet
         DataColumn column;
 
         column = new DataColumn();
-        column.DataType = System.Type.GetType("System.Int32");
-            column.ColumnName = "ID";
-            column.AutoIncrement = true;
-            column.ReadOnly = true;
-            column.Unique = true; 
-
-            StillStats.Columns.Add(column);
-
-            column = new DataColumn();
         column.ColumnName = "Time";
             column.DataType = System.Type.GetType("System.DateTime");
             column.ReadOnly = false;
@@ -37,25 +27,9 @@ namespace AutoStillDotNet
 
             StillStats.Columns.Add(column);
 
-            
-            column = new DataColumn();
-        column.ColumnName = "TemperatureDelta";
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ReadOnly = false;
-            column.Unique = false;
-
-            StillStats.Columns.Add(column);
             column = new DataColumn();
             column.ColumnName = "Pressure";
             column.DataType = System.Type.GetType("System.Decimal");
-            column.ReadOnly = false;
-            column.Unique = false;
-
-            StillStats.Columns.Add(column);
-
-            column = new DataColumn();
-            column.ColumnName = "Phase";
-            column.DataType = System.Type.GetType("System.Int32");
             column.ReadOnly = false;
             column.Unique = false;
 
@@ -85,9 +59,6 @@ namespace AutoStillDotNet
 
             StillStats.Columns.Add(column);
 
-            DataColumn[] PrimaryKeyColumns = new DataColumn[1];
-        PrimaryKeyColumns[0] = StillStats.Columns["id"];
-            StillStats.PrimaryKey = PrimaryKeyColumns;
             return StillStats;
             }
 
@@ -106,7 +77,7 @@ namespace AutoStillDotNet
                 command.CommandText = "insert into RunHeaders (rhDate, rhStart, rhEnd, rhDuration, rhComplete, rhUnits) values ("+ Values +")";
                 command.Connection = sqlConnection;
                 sqlConnection.Open();
-                command.ExecuteNonQuery();
+                //command.ExecuteNonQuery();
                 sqlConnection.Close();
             }
         }
@@ -117,7 +88,7 @@ namespace AutoStillDotNet
             SqlConnection sqlConnection = SystemProperties.sqlconnection;
 
             //Variable to hold the run header ID to make sure the records are linked to the run properly
-            int HeaderID;
+            int HeaderID = 0;
 
             //Open the connection, get the header ID and then insert the table
             sqlConnection.Open();
@@ -126,7 +97,7 @@ namespace AutoStillDotNet
                 command.CommandType = CommandType.Text;
                 command.CommandText = "select max(rhID) from runheaders where rhStart = '" + RunStart + "'";
                 command.Connection = sqlConnection;
-                HeaderID = Convert.ToInt32(command.ExecuteScalar());
+                //HeaderID = Convert.ToInt32(command.ExecuteScalar());
             }
 
 
@@ -136,7 +107,7 @@ namespace AutoStillDotNet
                 command.Parameters.Add(new SqlParameter("@runrecordtype", RunData));
                 command.Parameters.Add(new SqlParameter("@RHID", HeaderID));
                 command.Connection = sqlConnection;
-                command.ExecuteNonQuery();
+                //command.ExecuteNonQuery();
             }
 
             //Command to calculate averages that are on the header records from data contained in the run records
@@ -145,7 +116,7 @@ namespace AutoStillDotNet
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "CalculateAverages";
                 command.Connection = sqlConnection;
-                command.ExecuteNonQuery();
+                //command.ExecuteNonQuery();
             }
             sqlConnection.Close();
         }
