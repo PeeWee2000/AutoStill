@@ -6,6 +6,8 @@ Prior to commit https://github.com/PeeWee2000/AutoStill/commit/538846325b1abfa24
 
 Subsequent commits have switched over to using a Dataq DI2008 and a FTDI relay board to control data reads and switching due to the long term goals of this project. 
 
+To run this software, plug in both a Dataq DI2008 and a SainSmart 8 channel relayboard and then just run the program. It wont work properly until all hardware is connected to both the relay board and the data logger but it will run so you can see basic usage. When connecting everything it is useful to note that relay outputs are listed in the appconfig and sensor inputs are outlined in the "InitializeDI2008" function in the backgroundworkers class.
+
 Hardware used in this project includes:
    - Dataq DI2008
    - SainSmart 8 Channel Relay Controller
