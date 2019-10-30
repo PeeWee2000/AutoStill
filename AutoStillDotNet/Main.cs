@@ -21,10 +21,10 @@ namespace AutoStillDotNet
         private BackgroundWorker StillController; //Turns the element, pumps and valves on and off
         //private BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
         //private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
+        StillStatsContext Context = new StillStatsContext();
 
-        
-        public static int RefreshRate = 250; //Refresh rate of data collection in milliseconds
-                                             
+
+        public static int RefreshRate = 1000; //Refresh rate of data collection in milliseconds
         public static Variables CurrentState = new Variables(); //Varaiables written to and read by all the various loops -- Assume the still is empty and all periphrials are off when starting up
         public static List<RunRecord> CurrentRun = new List<RunRecord>();
 
@@ -47,7 +47,7 @@ namespace AutoStillDotNet
             chartRun.ChartAreas[0].AxisY2.LabelStyle.Format = "###0.0##" + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI");
             chartRun.ChartAreas[0].AxisY2.IntervalAutoMode = IntervalAutoMode.FixedCount;
 
-
+            
             Series temperatureseries = new Series("Temperature");
             temperatureseries.BorderWidth = 2;
             temperatureseries.Color = Color.Red;
@@ -75,6 +75,8 @@ namespace AutoStillDotNet
         public void StillLoop()
         {
 
+
+
             //Dispatcher to accept commands from the various background workers
             Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
 
@@ -100,6 +102,9 @@ namespace AutoStillDotNet
                     if (CurrentState.Run != true)
                     { break; }
 
+
+
+
                     while (CurrentState.ColumnTemp == 0)
                     { Thread.Sleep(250); }
 
@@ -116,8 +121,21 @@ namespace AutoStillDotNet
                     DrainVessels();
 
 
-                    var Context = new StillStatsEntities();
-                    Context.RunRecords.AddRange(CurrentRun);
+                    var Header = new RunHeader();
+                    Header.rhStart = CurrentRun.First().rrTime;
+                    Header.rhEnd = CurrentRun.Last().rrTime;
+                    Header.rhDate = CurrentRun.First().rrTime;
+                    Header.rhComplete = true;
+                    Header.rhAvgPressure = CurrentRun.Select(i => i.rrPressure).Average();
+                    Header.rhDuration = Header.rhEnd - Header.rhStart;
+                    Header.rhUnits = "Metric";
+
+                    Header.RunRecords = CurrentRun;
+
+                    Context.Headers.Add(Header);
+
+                    Context.SaveChanges();
+
                     CurrentRun.Clear();
                     //StillStats.Clear();
 

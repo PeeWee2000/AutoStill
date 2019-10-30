@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\BackGroundWorkers.cs" />
+    <Compile Include="Classes\StillStatsContext.cs" />
     <Compile Include="Classes\Variables.cs" />
     <Compile Include="Forms\Settings.cs">
       <SubType>Form</SubType>
