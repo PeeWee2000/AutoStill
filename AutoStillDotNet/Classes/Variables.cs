@@ -26,6 +26,7 @@ namespace AutoStillDotNet.Classes
         public decimal RVWeight { get; set; } = 0;
         public decimal PlateauTemp { get; set; }
         public int Phase { get; set; } = -1; //Used to control the main still control background worker and report progress -1 = initializing, 0 = filling still and checking values, 1 = heating / vacuuming, 2 = distilling, 3 = draining
+        public int RunID { get; set; }
         public bool Run { get; set; } = true; //Used to shut down or start the whole process
     }
 }

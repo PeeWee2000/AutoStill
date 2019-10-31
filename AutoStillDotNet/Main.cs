@@ -21,7 +21,7 @@ namespace AutoStillDotNet
         private BackgroundWorker StillController; //Turns the element, pumps and valves on and off
         //private BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
         //private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
-        StillStatsContext Context = new StillStatsContext();
+        StillStatsEntities Context = new StillStatsEntities();
 
 
         public static int RefreshRate = 1000; //Refresh rate of data collection in milliseconds
@@ -90,6 +90,7 @@ namespace AutoStillDotNet
 
             //chartRun.DataSource = StillStats;
 
+
             StillController = new BackgroundWorker();
             StillController.WorkerSupportsCancellation = true;
             StillController.DoWork += new DoWorkEventHandler((state, args) =>
@@ -97,17 +98,21 @@ namespace AutoStillDotNet
             {
                 while (true)
                 {
-                    DateTime RunStart = DateTime.Now;
+                    var Header = new RunHeader();
+                    Header.rhStart = DateTime.Now;
+                    Header.rhEnd = DateTime.Now;
+                    Header.rhComplete = false;
+                    Header.rhAvgPressure = 0;
+                    Context.RunHeaders.Add(Header);
+                    Context.RunHeaders.Append(Header);
+                    Context.SaveChanges();
+                    CurrentState.RunID = Header.rhID;
 
                     if (CurrentState.Run != true)
                     { break; }
 
-
-
-
                     while (CurrentState.ColumnTemp == 0)
                     { Thread.Sleep(250); }
-
 
                     FillStill();
                     CurrentState.Phase = 1;
@@ -120,22 +125,12 @@ namespace AutoStillDotNet
 
                     DrainVessels();
 
-
-                    var Header = new RunHeader();
-                    Header.rhStart = CurrentRun.First().rrTime;
-                    Header.rhEnd = CurrentRun.Last().rrTime;
-                    Header.rhDate = CurrentRun.First().rrTime;
                     Header.rhComplete = true;
+                    Header.rhEnd = DateTime.Now;
                     Header.rhAvgPressure = CurrentRun.Select(i => i.rrPressure).Average();
-                    Header.rhDuration = Header.rhEnd - Header.rhStart;
-                    Header.rhUnits = "Metric";
-
-                    Header.RunRecords = CurrentRun;
-
-                    Context.Headers.Add(Header);
+                    Context.RunRecords.AddRange(CurrentRun);
 
                     Context.SaveChanges();
-
                     CurrentRun.Clear();
                     //StillStats.Clear();
 
@@ -170,8 +165,9 @@ namespace AutoStillDotNet
         {
             var Data = new RunRecord
             {
+                rrRHID = CurrentState.RunID,
                 rrTime = DateTime.Now,
-                rrTemp = CurrentState.ColumnTemp,
+                rrColumnHeadTemp = CurrentState.ColumnTemp,
                 rrPressure = CurrentState.Pressure,
                 rrPhase = CurrentState.Phase,
                 rrAmperage = CurrentState.SystemAmperage,
@@ -182,7 +178,7 @@ namespace AutoStillDotNet
             if (CurrentRun.Count < 2)
             { Data.rrTempDelta = 0; }
             else
-            { Data.rrTempDelta = CurrentState.ColumnTemp - CurrentRun.LastOrDefault().rrTemp; }
+            { Data.rrTempDelta = CurrentState.ColumnTemp - CurrentRun.LastOrDefault().rrColumnHeadTemp; }
 
             CurrentRun.Add(Data);
 
@@ -272,7 +268,7 @@ namespace AutoStillDotNet
             PressureRegulator.RunWorkerAsync();
 
             CurrentState.PlateauTemp = 0;
-            decimal StartTemp = CurrentRun.First().rrTemp;
+            decimal StartTemp = CurrentRun.First().rrColumnHeadTemp;
             decimal LastDelta = 0M;
             decimal TotalDelta = 0M;
 
@@ -292,34 +288,34 @@ namespace AutoStillDotNet
 
             while ((CurrentState.StillEmpty == false && CurrentState.RVFull == false && LastDelta >= 0.02M) || TotalDelta < 0.25M)
             {
-               decimal Temp1 = CurrentRun[CurrentRun.Count - 1].rrTemp;
-               decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrTemp;
+               decimal Temp1 = CurrentRun[CurrentRun.Count - 1].rrColumnHeadTemp;
+               decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrColumnHeadTemp;
 
                 LastDelta = Temp2 != 0 ? ((Temp2 - Temp1) / Temp2) : 0;
                 if (Temp2 > Temp1)
                 { TotalDelta = Temp2 != 0 ? ((Temp2 - StartTemp) / Temp2) : 0; }
 
                 RecordCurrentState();
+                Thread.Sleep(RefreshRate);
             }
         }
 
         public void Distill()
         {
-            CurrentState.PlateauTemp = CurrentRun.Last().rrTemp;
+            CurrentState.PlateauTemp = CurrentRun.Last().rrColumnHeadTemp;
             BackGroundWorkers.EnableRelay(SystemProperties.CoolantPump);
 
 
             //Once the first plateau is reached allowing for a 4 degree change at the most
             //or end the batch if the saftey limit switch is triggered also reset the Delta counters so the next step is not skipped
-            while (CurrentState.StillEmpty == false && CurrentState.RVFull == false && (CurrentRun.Last().rrTemp - CurrentState.PlateauTemp) < 5 )
+            while (CurrentState.StillEmpty == false && CurrentState.RVFull == false && (CurrentRun.Last().rrColumnHeadTemp - CurrentState.PlateauTemp) < 5 )
             {
-                decimal Temp1 = CurrentRun.Last().rrTemp;
-                decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrTemp;
+                decimal Temp1 = CurrentRun.Last().rrColumnHeadTemp;
+                decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrColumnHeadTemp;
                 decimal LastDelta = Math.Abs(((Temp2 - Temp1) / Temp2));
 
 
                 RecordCurrentState();
-
                 Thread.Sleep(RefreshRate);
             }
 
@@ -366,7 +362,7 @@ namespace AutoStillDotNet
         //    DataRow row = StillStats.NewRow();
 
         //    row["Time"] = RunRecord.rrTime;
-        //    row["Temperature"] = RunRecord.rrTemp;
+        //    row["Temperature"] = RunRecord.rrColumnHeadTemp;
         //    row["Pressure"] = RunRecord.rrPressure;
         //    row["Amperage"] = RunRecord.rrAmperage;
         //    row["RefluxTemperature"] = RunRecord.rrRefluxTemperature;

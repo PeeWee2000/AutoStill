@@ -21,13 +21,10 @@ namespace AutoStillDotNet
         }
     
         public int rhID { get; set; }
-        public System.DateTime rhDate { get; set; }
         public System.DateTime rhStart { get; set; }
         public System.DateTime rhEnd { get; set; }
-        public System.TimeSpan rhDuration { get; set; }
         public bool rhComplete { get; set; }
-        public string rhUnits { get; set; }
-        public Nullable<decimal> rhAvgPressure { get; set; }
+        public decimal rhAvgPressure { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<RunRecord> RunRecords { get; set; }
