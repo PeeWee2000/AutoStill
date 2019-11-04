@@ -37,21 +37,21 @@ namespace AutoStillDotNet
         {
             //Documentation for how this chart works available here https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings 
             chartRun.ChartAreas[0].Axes[0].MajorGrid.Enabled = false;//X axis
-            chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "####0°" + (SystemProperties.Units == "Metric" ? "C" : "F"); //Set the Y axis to use up to 4 digits and if there is no digit set a 0 then tack a degree and a "C" on the end
+            chartRun.ChartAreas[0].AxisY.LabelStyle.Format = "####0°" + "C"; //Set the Y axis to use up to 4 digits and if there is no digit set a 0 then tack a degree and a "C" on the end
             chartRun.ChartAreas[0].AxisY.IntervalType = DateTimeIntervalType.Number;
             chartRun.ChartAreas[0].AxisX.LabelStyle.Format = "mm:ss";
             chartRun.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Seconds;
             chartRun.ChartAreas[0].Axes[1].MajorGrid.Enabled = true;//Y axis
             chartRun.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
-            chartRun.ChartAreas[0].AxisY2.LabelStyle.Format = "###0.0##" + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI");
+            chartRun.ChartAreas[0].AxisY2.LabelStyle.Format = "###0.0##" + "kPa";
             chartRun.ChartAreas[0].AxisY2.IntervalAutoMode = IntervalAutoMode.FixedCount;
 
             
             Series temperatureseries = new Series("Temperature");
             temperatureseries.BorderWidth = 2;
             temperatureseries.Color = Color.Red;
-            temperatureseries.XValueMember = "Time";
-            temperatureseries.YValueMembers = "Temperature";
+            temperatureseries.XValueMember = nameof(RunRecord.rrTime);
+            temperatureseries.YValueMembers = nameof(RunRecord.rrColumnHeadTemp);
             chartRun.Series[0] = temperatureseries;
             chartRun.Series[0].ChartType = SeriesChartType.Line;
             chartRun.Series[0].XValueType = ChartValueType.DateTime;
@@ -60,8 +60,8 @@ namespace AutoStillDotNet
             Series pressureseries = new Series("Pressure");
             pressureseries.BorderWidth = 2;
             pressureseries.Color = Color.Blue;
-            pressureseries.XValueMember = "Time";
-            pressureseries.YValueMembers = "Pressure";
+            pressureseries.XValueMember = nameof(RunRecord.rrTime);
+            pressureseries.YValueMembers = nameof(RunRecord.rrPressure);
             chartRun.Series.Add(pressureseries);
             chartRun.Series[1].ChartType = SeriesChartType.Line;
             chartRun.Series[1].YValueType = ChartValueType.Single;
@@ -181,13 +181,7 @@ namespace AutoStillDotNet
             { Data.rrTempDelta = CurrentState.ColumnTemp - CurrentRun.LastOrDefault().rrColumnHeadTemp; }
 
             CurrentRun.Add(Data);
-
-            //lock (StillStats)
-            //{
-            //    var GraphData = ConvertEntityToRow(Data);
-            //    StillStats.Rows.Add(GraphData);                
-            //}
-
+            
             return Data;
         }
 
@@ -234,7 +228,8 @@ namespace AutoStillDotNet
                         lblRVLowSwitch.Text = CurrentState.RVEmpty.ToString();
                         lblRVHighSwtich.Text = CurrentState.RVFull.ToString();
                         lblStatus.Text = Status;
-                        chartRun.DataBind(); 
+                        chartRun.DataSource = CurrentRun;
+                        chartRun.DataBind();
                     }));
                     Thread.Sleep(RefreshRate);
                 }

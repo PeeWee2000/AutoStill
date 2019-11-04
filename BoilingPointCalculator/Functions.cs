@@ -42,7 +42,7 @@ namespace BoilingPointCalculator
         public static decimal GetWaterBoilingPoint(decimal PressureInPa)
         {
             decimal BoilingPoint = 0;
-            if (PressureInPa >= 1  && PressureInPa <= 500000)
+            if (PressureInPa >= 612  && PressureInPa <= 500000)
             { 
             BoilingPoint = Math.Round(Convert.ToDecimal(CoolProp.PropsSI("T", "P", Convert.ToDouble(PressureInPa), "Q", 0, "Water") - 273.15),2);
             }
