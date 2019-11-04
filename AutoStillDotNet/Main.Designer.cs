@@ -49,7 +49,6 @@
             this.label13 = new System.Windows.Forms.Label();
             this.lblPressure = new System.Windows.Forms.Label();
             this.chartRun = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pinSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -77,7 +76,6 @@
             this.label16 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chartRun)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -242,17 +240,9 @@
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chartRun.Series.Add(series1);
-            this.chartRun.Size = new System.Drawing.Size(681, 290);
+            this.chartRun.Size = new System.Drawing.Size(681, 578);
             this.chartRun.TabIndex = 16;
             this.chartRun.Text = "Current Run Temperature vs Time";
-            // 
-            // dataGridView1
-            // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(856, 338);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(681, 277);
-            this.dataGridView1.TabIndex = 17;
             // 
             // menuStrip1
             // 
@@ -483,7 +473,6 @@
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.btnRescan);
-            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.chartRun);
             this.Controls.Add(this.lblPressure);
             this.Controls.Add(this.label13);
@@ -509,7 +498,6 @@
             this.Load += new System.EventHandler(this.Main_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chartRun)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -536,7 +524,6 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lblPressure;
         private System.Windows.Forms.DataVisualization.Charting.Chart chartRun;
-        private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pinSettingsToolStripMenuItem;

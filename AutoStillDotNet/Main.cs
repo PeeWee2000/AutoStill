@@ -228,8 +228,11 @@ namespace AutoStillDotNet
                         lblRVLowSwitch.Text = CurrentState.RVEmpty.ToString();
                         lblRVHighSwtich.Text = CurrentState.RVFull.ToString();
                         lblStatus.Text = Status;
-                        chartRun.DataSource = CurrentRun;
+
+
+                        chartRun.DataSource = CurrentRun.ToList();
                         chartRun.DataBind();
+                        
                     }));
                     Thread.Sleep(RefreshRate);
                 }

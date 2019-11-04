@@ -111,10 +111,9 @@ namespace AutoStillDotNet
                             MainDispatcher.Invoke(new Action(() =>
                             {
                                 Main.CurrentState.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
-                                //Main.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
+                                Main.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
                                 Main.CurrentState.StillFluidTemp = Math.Round(DI2008Data.Analog1.Value.Value, 2);
                                 Main.CurrentState.RefluxTemp = Math.Round(DI2008Data.Analog2.Value.Value, 2);
-                                //Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog4.Value.Value / (5M / 45M)) - 16.5M, 2);
                                 //Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog4.Value.Value / ((5M / 306816.7M) / 1000)), 2); //Converts to Pascals and Divides by 1000 for Kilo Pascals -- 306816.7 is 44.5PSI converted Pascals which is the range measurable by the transducer
                                 Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 306816.7M)) / 1000, 2);
                                 Main.CurrentState.SystemAmperage = DI2008Data.Analog5.Value.Value;
