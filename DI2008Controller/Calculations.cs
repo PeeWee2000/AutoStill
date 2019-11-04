@@ -21,7 +21,7 @@ namespace DI2008Controller
                 
 
 
-                //This is inefficent and causes good reads to be ignored  if you need higher frequency readings this will need to be optimized
+                //This is inefficent and causes good reads to be ignored when there are less than 7 channels enabled, if you need higher frequency readings this will need to be optimized
                 if (ADCValues.Count <= DI2008.EnabledAnalogChannels)
                 { 
                     if (CurrentChannel < DI2008.EnabledAnalogChannels && CurrentChannel >= 0)

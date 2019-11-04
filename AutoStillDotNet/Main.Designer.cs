@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -43,8 +43,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.lblTemp1 = new System.Windows.Forms.Label();
             this.lblStatus = new System.Windows.Forms.Label();
-            this.lblTemp2 = new System.Windows.Forms.Label();
             this.lblTemp3 = new System.Windows.Forms.Label();
+            this.lblTemp4 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.lblPressure = new System.Windows.Forms.Label();
@@ -71,6 +71,10 @@
             this.lblStillHighSwitch = new System.Windows.Forms.Label();
             this.lblRVLowSwitch = new System.Windows.Forms.Label();
             this.lblRVHighSwtich = new System.Windows.Forms.Label();
+            this.lblTemp2 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.lblTheoretical = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chartRun)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
@@ -89,7 +93,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 139);
+            this.label1.Location = new System.Drawing.Point(408, 87);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(134, 13);
             this.label1.TabIndex = 1;
@@ -98,7 +102,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 193);
+            this.label2.Location = new System.Drawing.Point(348, 524);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(90, 13);
             this.label2.TabIndex = 2;
@@ -116,7 +120,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(16, 260);
+            this.label4.Location = new System.Drawing.Point(408, 272);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(139, 13);
             this.label4.TabIndex = 4;
@@ -141,7 +145,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(13, 316);
+            this.label6.Location = new System.Drawing.Point(671, 293);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(160, 13);
             this.label6.TabIndex = 7;
@@ -161,7 +165,7 @@
             // 
             this.lblTemp1.AutoSize = true;
             this.lblTemp1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTemp1.Location = new System.Drawing.Point(15, 152);
+            this.lblTemp1.Location = new System.Drawing.Point(407, 100);
             this.lblTemp1.Name = "lblTemp1";
             this.lblTemp1.Size = new System.Drawing.Size(70, 24);
             this.lblTemp1.TabIndex = 9;
@@ -177,25 +181,25 @@
             this.lblStatus.TabIndex = 10;
             this.lblStatus.Text = "Status";
             // 
-            // lblTemp2
-            // 
-            this.lblTemp2.AutoSize = true;
-            this.lblTemp2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTemp2.Location = new System.Drawing.Point(15, 273);
-            this.lblTemp2.Name = "lblTemp2";
-            this.lblTemp2.Size = new System.Drawing.Size(70, 24);
-            this.lblTemp2.TabIndex = 11;
-            this.lblTemp2.Text = "Temp2";
-            // 
             // lblTemp3
             // 
             this.lblTemp3.AutoSize = true;
             this.lblTemp3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTemp3.Location = new System.Drawing.Point(15, 329);
+            this.lblTemp3.Location = new System.Drawing.Point(407, 285);
             this.lblTemp3.Name = "lblTemp3";
             this.lblTemp3.Size = new System.Drawing.Size(70, 24);
-            this.lblTemp3.TabIndex = 12;
+            this.lblTemp3.TabIndex = 11;
             this.lblTemp3.Text = "Temp3";
+            // 
+            // lblTemp4
+            // 
+            this.lblTemp4.AutoSize = true;
+            this.lblTemp4.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTemp4.Location = new System.Drawing.Point(673, 306);
+            this.lblTemp4.Name = "lblTemp4";
+            this.lblTemp4.Size = new System.Drawing.Size(70, 24);
+            this.lblTemp4.TabIndex = 12;
+            this.lblTemp4.Text = "Temp4";
             // 
             // label12
             // 
@@ -219,7 +223,7 @@
             // 
             this.lblPressure.AutoSize = true;
             this.lblPressure.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblPressure.Location = new System.Drawing.Point(15, 206);
+            this.lblPressure.Location = new System.Drawing.Point(347, 537);
             this.lblPressure.Name = "lblPressure";
             this.lblPressure.Size = new System.Drawing.Size(85, 24);
             this.lblPressure.TabIndex = 15;
@@ -227,17 +231,17 @@
             // 
             // chartRun
             // 
-            chartArea1.Name = "ChartArea1";
-            this.chartRun.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chartRun.Legends.Add(legend1);
+            chartArea2.Name = "ChartArea1";
+            this.chartRun.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chartRun.Legends.Add(legend2);
             this.chartRun.Location = new System.Drawing.Point(856, 39);
             this.chartRun.Name = "chartRun";
             this.chartRun.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.SemiTransparent;
-            series1.ChartArea = "ChartArea1";
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            this.chartRun.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.chartRun.Series.Add(series2);
             this.chartRun.Size = new System.Drawing.Size(681, 290);
             this.chartRun.TabIndex = 16;
             this.chartRun.Text = "Current Run Temperature vs Time";
@@ -275,20 +279,20 @@
             // pinSettingsToolStripMenuItem
             // 
             this.pinSettingsToolStripMenuItem.Name = "pinSettingsToolStripMenuItem";
-            this.pinSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pinSettingsToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.pinSettingsToolStripMenuItem.Text = "Pin Settings";
             this.pinSettingsToolStripMenuItem.Click += new System.EventHandler(this.PinSettingsToolStripMenuItem_Click);
             // 
             // sensorCalibrationToolStripMenuItem
             // 
             this.sensorCalibrationToolStripMenuItem.Name = "sensorCalibrationToolStripMenuItem";
-            this.sensorCalibrationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sensorCalibrationToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.sensorCalibrationToolStripMenuItem.Text = "Sensor Calibration";
             // 
             // costSettingsToolStripMenuItem
             // 
             this.costSettingsToolStripMenuItem.Name = "costSettingsToolStripMenuItem";
-            this.costSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.costSettingsToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.costSettingsToolStripMenuItem.Text = "Cost Settings";
             // 
             // dataToolStripMenuItem
@@ -353,7 +357,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 485);
+            this.label8.Location = new System.Drawing.Point(434, 448);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(87, 13);
             this.label8.TabIndex = 20;
@@ -362,7 +366,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(12, 498);
+            this.label9.Location = new System.Drawing.Point(434, 382);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(89, 13);
             this.label9.TabIndex = 21;
@@ -371,7 +375,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(12, 511);
+            this.label10.Location = new System.Drawing.Point(506, 592);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(153, 13);
             this.label10.TabIndex = 22;
@@ -380,7 +384,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(12, 524);
+            this.label11.Location = new System.Drawing.Point(542, 498);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(155, 13);
             this.label11.TabIndex = 23;
@@ -389,7 +393,7 @@
             // lblStillLowSwitch
             // 
             this.lblStillLowSwitch.AutoSize = true;
-            this.lblStillLowSwitch.Location = new System.Drawing.Point(96, 485);
+            this.lblStillLowSwitch.Location = new System.Drawing.Point(518, 448);
             this.lblStillLowSwitch.Name = "lblStillLowSwitch";
             this.lblStillLowSwitch.Size = new System.Drawing.Size(32, 13);
             this.lblStillLowSwitch.TabIndex = 24;
@@ -398,7 +402,7 @@
             // lblStillHighSwitch
             // 
             this.lblStillHighSwitch.AutoSize = true;
-            this.lblStillHighSwitch.Location = new System.Drawing.Point(96, 498);
+            this.lblStillHighSwitch.Location = new System.Drawing.Point(518, 382);
             this.lblStillHighSwitch.Name = "lblStillHighSwitch";
             this.lblStillHighSwitch.Size = new System.Drawing.Size(32, 13);
             this.lblStillHighSwitch.TabIndex = 25;
@@ -407,7 +411,7 @@
             // lblRVLowSwitch
             // 
             this.lblRVLowSwitch.AutoSize = true;
-            this.lblRVLowSwitch.Location = new System.Drawing.Point(171, 511);
+            this.lblRVLowSwitch.Location = new System.Drawing.Point(665, 592);
             this.lblRVLowSwitch.Name = "lblRVLowSwitch";
             this.lblRVLowSwitch.Size = new System.Drawing.Size(32, 13);
             this.lblRVLowSwitch.TabIndex = 26;
@@ -416,11 +420,49 @@
             // lblRVHighSwtich
             // 
             this.lblRVHighSwtich.AutoSize = true;
-            this.lblRVHighSwtich.Location = new System.Drawing.Point(171, 524);
+            this.lblRVHighSwtich.Location = new System.Drawing.Point(701, 498);
             this.lblRVHighSwtich.Name = "lblRVHighSwtich";
             this.lblRVHighSwtich.Size = new System.Drawing.Size(32, 13);
             this.lblRVHighSwtich.TabIndex = 27;
             this.lblRVHighSwtich.Text = "State";
+            // 
+            // lblTemp2
+            // 
+            this.lblTemp2.AutoSize = true;
+            this.lblTemp2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTemp2.Location = new System.Drawing.Point(347, 498);
+            this.lblTemp2.Name = "lblTemp2";
+            this.lblTemp2.Size = new System.Drawing.Size(70, 24);
+            this.lblTemp2.TabIndex = 29;
+            this.lblTemp2.Text = "Temp2";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(348, 485);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(135, 13);
+            this.label15.TabIndex = 28;
+            this.label15.Text = "Boiling Vessel Temperature";
+            // 
+            // lblTheoretical
+            // 
+            this.lblTheoretical.AutoSize = true;
+            this.lblTheoretical.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTheoretical.Location = new System.Drawing.Point(407, 62);
+            this.lblTheoretical.Name = "lblTheoretical";
+            this.lblTheoretical.Size = new System.Drawing.Size(109, 24);
+            this.lblTheoretical.TabIndex = 31;
+            this.lblTheoretical.Text = "BoilingPoint";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(408, 49);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(121, 13);
+            this.label16.TabIndex = 30;
+            this.label16.Text = "Theoretical Boiling Point";
             // 
             // Main
             // 
@@ -428,6 +470,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.ClientSize = new System.Drawing.Size(1549, 629);
+            this.Controls.Add(this.lblTheoretical);
+            this.Controls.Add(this.label16);
+            this.Controls.Add(this.lblTemp2);
+            this.Controls.Add(this.label15);
             this.Controls.Add(this.lblRVHighSwtich);
             this.Controls.Add(this.lblRVLowSwitch);
             this.Controls.Add(this.lblStillHighSwitch);
@@ -442,8 +488,8 @@
             this.Controls.Add(this.lblPressure);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label12);
+            this.Controls.Add(this.lblTemp4);
             this.Controls.Add(this.lblTemp3);
-            this.Controls.Add(this.lblTemp2);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.lblTemp1);
             this.Controls.Add(this.label7);
@@ -484,8 +530,8 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label lblTemp1;
         private System.Windows.Forms.Label lblStatus;
-        private System.Windows.Forms.Label lblTemp2;
         private System.Windows.Forms.Label lblTemp3;
+        private System.Windows.Forms.Label lblTemp4;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lblPressure;
@@ -512,6 +558,10 @@
         private System.Windows.Forms.Label lblStillHighSwitch;
         private System.Windows.Forms.Label lblRVLowSwitch;
         private System.Windows.Forms.Label lblRVHighSwtich;
+        private System.Windows.Forms.Label lblTemp2;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label lblTheoretical;
+        private System.Windows.Forms.Label label16;
     }
 }
 

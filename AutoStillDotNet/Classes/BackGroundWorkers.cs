@@ -16,7 +16,7 @@ namespace AutoStillDotNet
         //private static BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
 
         //public static RelayBoard Relays = new RelayBoard();
-        public static RelayBoard Relays;
+        public static RelayBoard Relays = new RelayBoard();
 
         private static DI2008 DI2008 = new DI2008();
         private static ReadRecord DI2008Data = new ReadRecord();
@@ -25,35 +25,21 @@ namespace AutoStillDotNet
         //These two relay functions exist to provide an easy way to switch to a debug mode
         public static void EnableRelay(int Device)
         {
-            //EnableRelay(Device);
+            Relays.EnableRelay(Device);
         }
         public static void DisableRelay(int Device)
         {
-            //EnableRelay(Device);
+            Relays.DisableRelay(Device);
         }
 
         public static void InitializeDI2008()
         {
 
-            //DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
-            //DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
-            //DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
-            //DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            //DI2008.Channels.Analog4 = ChannelConfiguration._5v; // System Pressure
-            //DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
-            //DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
-
-            //DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
-            //DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
-            //DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
-            //DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
-
-            ///////////////////////////////Dev Values//////////////////////////////////
-            DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
-            DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
+            DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
+            DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
             DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
             DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
+            DI2008.Channels.Analog4 = ChannelConfiguration._5v; // System Pressure
             DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
             DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
 
@@ -61,6 +47,20 @@ namespace AutoStillDotNet
             DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
             DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
             DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
+
+            ///////////////////////////////Dev Values//////////////////////////////////
+            //DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
+            //DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
+            //DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
+            //DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
+            //DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
+            //DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
+            //DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
+
+            //DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
+            //DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
+            //DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
+            //DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
 
             DI2008.ConfigureChannels();
@@ -105,18 +105,22 @@ namespace AutoStillDotNet
                         {
                             DI2008Data = DI2008.Functions.ReadData();
                             
+                            while (!DI2008Data.Analog0.HasValue)
+                            { Thread.Sleep(100); }
+
                             MainDispatcher.Invoke(new Action(() =>
                             {
-                                //Main.CurrentState.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
-                                Main.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
-                                Main.CurrentState.RefluxTemp = DI2008Data.Analog1.Value.Value;
-                                Main.CurrentState.CondensorTemp = DI2008Data.Analog2.Value.Value;
-                                //Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog4.Value.Value / (5M / 45M)) - 15, 2);
-                                Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 45M)) - 15, 2);
+                                Main.CurrentState.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
+                                //Main.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
+                                Main.CurrentState.StillFluidTemp = Math.Round(DI2008Data.Analog1.Value.Value, 2);
+                                Main.CurrentState.RefluxTemp = Math.Round(DI2008Data.Analog2.Value.Value, 2);
+                                //Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog4.Value.Value / (5M / 45M)) - 16.5M, 2);
+                                Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog4.Value.Value / ((5M / 306816.7M) / 1000)), 2); //Converts to Pascals and Divides by 1000 for Kilo Pascals -- 306816.7 is 44.5PSI converted Pascals which is the range measurable by the transducer
+                                //Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 45M)) - 15, 2);
                                 Main.CurrentState.SystemAmperage = DI2008Data.Analog5.Value.Value;
-                                Main.CurrentState.StillEmpty = DI2008Data.Digital0.Value == DigtitalState.Low ? true : false;
-                                Main.CurrentState.StillFull = DI2008Data.Digital1.Value == DigtitalState.High ? true : false;
-                                Main.CurrentState.RVEmpty = DI2008Data.Digital2.Value == DigtitalState.High ? true : false;
+                                Main.CurrentState.StillFull = DI2008Data.Digital0.Value == DigtitalState.High ? true : false;
+                                Main.CurrentState.StillEmpty = DI2008Data.Digital1.Value == DigtitalState.Low ? true : false;                                
+                                Main.CurrentState.RVEmpty = DI2008Data.Digital2.Value == DigtitalState.Low ? true : false;
                                 Main.CurrentState.RVFull = DI2008Data.Digital3.Value == DigtitalState.Low ? true : false;
 
 
@@ -148,7 +152,7 @@ namespace AutoStillDotNet
                         if (Main.CurrentState.Run != true || PressureWorker.CancellationPending == true)
                         { break; }
 
-                        System.Threading.Thread.Sleep(1000);
+                        Thread.Sleep(1000);
                         if (Convert.ToDouble(Main.CurrentState.Pressure) > SystemProperties.TargetPressure && Main.CurrentState.VacuumPumpOn == false)
                         {
                             EnableRelay(SystemProperties.VacuumPump);

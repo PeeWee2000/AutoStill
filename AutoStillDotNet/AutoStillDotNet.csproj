@@ -180,6 +180,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BoilingPointCalculator\BoilingPointCalculator.csproj">
+      <Project>{e4bb1ed2-df8b-42a2-8592-7fd686be4df1}</Project>
+      <Name>BoilingPointCalculator</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DI2008Controller\DI2008Controller.csproj">
       <Project>{86050a88-fb95-4e4c-9156-922dd00b6faa}</Project>
       <Name>DI2008Controller</Name>

@@ -23,11 +23,10 @@ namespace AutoStillDotNet
         //private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
         StillStatsEntities Context = new StillStatsEntities();
 
-
-        public static int RefreshRate = 1000; //Refresh rate of data collection in milliseconds
-        public static Variables CurrentState = new Variables(); //Varaiables written to and read by all the various loops -- Assume the still is empty and all periphrials are off when starting up
+        public static Variables CurrentState = new Variables(); 
         public static List<RunRecord> CurrentRun = new List<RunRecord>();
 
+        public static int RefreshRate = 1000;
 
         public Main()
         {
@@ -103,9 +102,10 @@ namespace AutoStillDotNet
                     Header.rhEnd = DateTime.Now;
                     Header.rhComplete = false;
                     Header.rhAvgPressure = 0;
+
                     Context.RunHeaders.Add(Header);
-                    Context.RunHeaders.Append(Header);
                     Context.SaveChanges();
+
                     CurrentState.RunID = Header.rhID;
 
                     if (CurrentState.Run != true)
@@ -221,9 +221,14 @@ namespace AutoStillDotNet
                             break;
                     }
 
+                    decimal CurrentBoilingPoint = BoilingPointCalculator.Functions.GetWaterBoilingPoint(CurrentState.Pressure * 1000);
+
                     MainDispatcher.Invoke(new Action(() => {
-                        lblPressure.Text = CurrentState.Pressure + ((SystemProperties.Units == "Metric") ? "kPa" : "PSI");
-                        lblTemp1.Text = CurrentState.ColumnTemp + ((SystemProperties.Units == "Metric") ? "°C" : "°F");
+                        lblPressure.Text = (CurrentState.Pressure) + "kPa";
+                        lblTheoretical.Text =  CurrentBoilingPoint + "°C";
+                        lblTemp1.Text = CurrentState.ColumnTemp + "°C";
+                        lblTemp2.Text = CurrentState.StillFluidTemp + "°C";
+                        lblTemp3.Text = CurrentState.RefluxTemp + "°C";
                         lblStillLowSwitch.Text = CurrentState.StillEmpty.ToString();
                         lblStillHighSwitch.Text = CurrentState.StillFull.ToString();
                         lblRVLowSwitch.Text = CurrentState.RVEmpty.ToString();
@@ -241,6 +246,8 @@ namespace AutoStillDotNet
 
         public void FillStill()
         {
+            PressureRegulator.RunWorkerAsync();
+
             BackGroundWorkers.EnableRelay(SystemProperties.StillFillValve);
             CurrentState.StillValveOpen = true;
             Thread.Sleep(3000); //Wait 3 seconds for the valve to open
@@ -263,9 +270,7 @@ namespace AutoStillDotNet
             RecordCurrentState();
 
             BackGroundWorkers.EnableRelay(SystemProperties.StillElement);
-            CurrentState.ElementOn = true;
-
-            PressureRegulator.RunWorkerAsync();
+            CurrentState.ElementOn = true;            
 
             CurrentState.PlateauTemp = 0;
             decimal StartTemp = CurrentRun.First().rrColumnHeadTemp;
@@ -357,7 +362,7 @@ namespace AutoStillDotNet
             BackGroundWorkers.DisableRelay(SystemProperties.RVDrainValve);
         }
 
-        //public static DataRow ConvertEntityToRow(RunRecord RunRecord)
+            //public static DataRow ConvertEntityToRow(RunRecord RunRecord)
         //{
         //    DataRow row = StillStats.NewRow();
 

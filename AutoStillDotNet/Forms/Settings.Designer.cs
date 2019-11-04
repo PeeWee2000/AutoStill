@@ -91,7 +91,6 @@
             this.label3.Size = new System.Drawing.Size(95, 13);
             this.label3.TabIndex = 4;
             this.label3.Text = "Select Pin Number";
-            this.label3.Click += new System.EventHandler(this.Label3_Click);
             // 
             // button1
             // 
@@ -113,7 +112,7 @@
             this.rbImperial.TabStop = true;
             this.rbImperial.Text = "Imperial";
             this.rbImperial.UseVisualStyleBackColor = true;
-            this.rbImperial.CheckedChanged += new System.EventHandler(this.rbImperial_Checked);
+            //this.rbImperial.CheckedChanged += new System.EventHandler(this.rbImperial_Checked);
             // 
             // label4
             // 
@@ -134,7 +133,7 @@
             this.rbMetric.TabIndex = 8;
             this.rbMetric.Text = "Metric";
             this.rbMetric.UseVisualStyleBackColor = true;
-            this.rbMetric.CheckedChanged += new System.EventHandler(this.RbMetric_CheckedChanged);
+            //this.rbMetric.CheckedChanged += new System.EventHandler(this.RbMetric_CheckedChanged);
             // 
             // label5
             // 

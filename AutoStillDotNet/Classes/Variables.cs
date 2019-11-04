@@ -6,10 +6,20 @@ using System.Threading.Tasks;
 
 namespace AutoStillDotNet.Classes
 {
+    /// <summary>
+    /// Varaiables written to and read by all the various loops -- Assumes the still is empty and all periphrials are off when starting up
+    /// </summary>
     public class Variables
     {
+        /// <summary>
+        /// Varaiables written to and read by all the various loops -- Assumes the still is empty and all periphrials are off when starting up
+        /// </summary>
+        public Variables()
+        { }
+
         public decimal ColumnTemp { get; set; }
-        public decimal Pressure{ get; set; }
+        public decimal StillFluidTemp { get; set; }
+        public decimal Pressure { get; set; } = 101.325M;
         public decimal RefluxTemp { get; set; }
         public decimal CondensorTemp { get; set; }
         public decimal SystemAmperage { get; set; }

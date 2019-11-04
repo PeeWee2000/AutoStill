@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E4BB1ED2-DF8B-42A2-8592-7FD686BE4DF1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>BoilingPointCalculator</RootNamespace>
+    <AssemblyName>BoilingPointCalculator</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CoolProp\AbstractState.cs" />
+    <Compile Include="CoolProp\AbstractStateGenerator.cs" />
+    <Compile Include="CoolProp\backends.cs" />
+    <Compile Include="CoolProp\backend_families.cs" />
+    <Compile Include="CoolProp\composition_types.cs" />
+    <Compile Include="CoolProp\Configuration.cs" />
+    <Compile Include="CoolProp\ConfigurationDataTypes.cs" />
+    <Compile Include="CoolProp\ConfigurationItem.cs" />
+    <Compile Include="CoolProp\configuration_keys.cs" />
+    <Compile Include="CoolProp\CoolProp.cs" />
+    <Compile Include="CoolProp\CoolPropPINVOKE.cs" />
+    <Compile Include="CoolProp\CriticalState.cs" />
+    <Compile Include="CoolProp\DoubleVector.cs" />
+    <Compile Include="CoolProp\fluid_types.cs" />
+    <Compile Include="CoolProp\GuessesStructure.cs" />
+    <Compile Include="CoolProp\input_pairs.cs" />
+    <Compile Include="CoolProp\parameters.cs" />
+    <Compile Include="CoolProp\PhaseEnvelopeData.cs" />
+    <Compile Include="CoolProp\phases.cs" />
+    <Compile Include="CoolProp\SimpleState.cs" />
+    <Compile Include="CoolProp\SpinodalData.cs" />
+    <Compile Include="CoolProp\SsatSimpleState.cs" />
+    <Compile Include="CoolProp\StringVector.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_bool.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_CoolPropDbl.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_CoolProp__backend_families.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_CoolProp__parameters.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_CoolProp__phases.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_double.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_shared_ptrT_CoolProp__AbstractStateGenerator_t.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_std__mapT_configuration_keys_CoolProp__ConfigurationItem_t.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_std__string.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_std__vectorT_CoolPropDbl_t.cs" />
+    <Compile Include="CoolProp\SWIGTYPE_p_std__vectorT_CoolProp__CriticalState_t.cs" />
+    <Compile Include="CoolProp\VectorOfDoubleVector.cs" />
+    <Compile Include="CoolProp\VectorOfStringVector.cs" />
+    <Compile Include="Functions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CoolProp.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
