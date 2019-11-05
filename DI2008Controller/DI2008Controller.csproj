@@ -8,4 +8,10 @@
     <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="LibUsbDotNet.LibUsbDotNet.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

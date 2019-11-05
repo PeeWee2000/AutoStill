@@ -240,7 +240,7 @@
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chartRun.Series.Add(series1);
-            this.chartRun.Size = new System.Drawing.Size(681, 578);
+            this.chartRun.Size = new System.Drawing.Size(681, 246);
             this.chartRun.TabIndex = 16;
             this.chartRun.Text = "Current Run Temperature vs Time";
             // 

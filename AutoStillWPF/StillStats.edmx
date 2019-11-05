@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="StillStatsModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+      <Schema Namespace="StillStatsModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="RunHeaders">
           <Key>
             <PropertyRef Name="rhID" />
@@ -52,7 +52,8 @@
             <End Role="RunRecords" EntitySet="RunRecords" />
           </AssociationSet>
         </EntityContainer>
-      </Schema></edmx:StorageModels>
+      </Schema>
+    </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="StillStatsModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -63,6 +64,7 @@
           <Property Name="rhID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="rhStart" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="rhEnd" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="rhDuration" Type="String" MaxLength="30" FixedLength="false" Unicode="false" annotation:StoreGeneratedPattern="Computed" />
           <Property Name="rhComplete" Type="Boolean" Nullable="false" />
           <Property Name="rhAvgPressure" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
           <NavigationProperty Name="RunRecords" Relationship="Self.FK_RunRecords_RunHeaders" FromRole="RunHeaders" ToRole="RunRecords" />
@@ -74,15 +76,15 @@
           <Property Name="rrID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="rrRHID" Type="Int32" Nullable="false" />
           <Property Name="rrTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="rrColumnHeadTemp" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="rrStillTemp" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
           <Property Name="rrTempDelta" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
           <Property Name="rrPressure" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
           <Property Name="rrPhase" Type="Int32" Nullable="false" />
           <Property Name="rrAmperage" Type="Decimal" Precision="10" Scale="2" />
-          <NavigationProperty Name="RunHeader" Relationship="Self.FK_RunRecords_RunHeaders" FromRole="RunRecords" ToRole="RunHeaders" />
-          <Property Name="rrColumnHeadTemp" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
-          <Property Name="rrStillTemp" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
           <Property Name="rrRefluxTemp" Type="Decimal" Precision="10" Scale="2" />
           <Property Name="rrCondensorTemp" Type="Decimal" Precision="10" Scale="2" />
+          <NavigationProperty Name="RunHeader" Relationship="Self.FK_RunRecords_RunHeaders" FromRole="RunRecords" ToRole="RunHeaders" />
         </EntityType>
         <Association Name="FK_RunRecords_RunHeaders">
           <End Role="RunHeaders" Type="Self.RunHeader" Multiplicity="1" />
@@ -116,6 +118,7 @@
                 <ScalarProperty Name="rhID" ColumnName="rhID" />
                 <ScalarProperty Name="rhStart" ColumnName="rhStart" />
                 <ScalarProperty Name="rhEnd" ColumnName="rhEnd" />
+                <ScalarProperty Name="rhDuration" ColumnName="rhDuration" />
                 <ScalarProperty Name="rhComplete" ColumnName="rhComplete" />
                 <ScalarProperty Name="rhAvgPressure" ColumnName="rhAvgPressure" />
               </MappingFragment>
@@ -124,18 +127,18 @@
           <EntitySetMapping Name="RunRecords">
             <EntityTypeMapping TypeName="StillStatsModel.RunRecord">
               <MappingFragment StoreEntitySet="RunRecords">
-                <ScalarProperty Name="rrCondensorTemp" ColumnName="rrCondensorTemp" />
-                <ScalarProperty Name="rrRefluxTemp" ColumnName="rrRefluxTemp" />
-                <ScalarProperty Name="rrStillTemp" ColumnName="rrStillTemp" />
-                <ScalarProperty Name="rrColumnHeadTemp" ColumnName="rrColumnHeadTemp" />
                 <ScalarProperty Name="rrID" ColumnName="rrID" />
                 <ScalarProperty Name="rrRHID" ColumnName="rrRHID" />
                 <ScalarProperty Name="rrTime" ColumnName="rrTime" />
+                <ScalarProperty Name="rrColumnHeadTemp" ColumnName="rrColumnHeadTemp" />
+                <ScalarProperty Name="rrStillTemp" ColumnName="rrStillTemp" />
                 <ScalarProperty Name="rrTempDelta" ColumnName="rrTempDelta" />
                 <ScalarProperty Name="rrPressure" ColumnName="rrPressure" />
                 <ScalarProperty Name="rrPhase" ColumnName="rrPhase" />
                 <ScalarProperty Name="rrAmperage" ColumnName="rrAmperage" />
-                </MappingFragment>
+                <ScalarProperty Name="rrRefluxTemp" ColumnName="rrRefluxTemp" />
+                <ScalarProperty Name="rrCondensorTemp" ColumnName="rrCondensorTemp" />
+              </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
         </EntityContainerMapping>

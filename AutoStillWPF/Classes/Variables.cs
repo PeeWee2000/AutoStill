@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AutoStillDotNet.Classes
+﻿namespace AutoStillWPF
 {
     /// <summary>
     /// Varaiables written to and read by all the various loops -- Assumes the still is empty and all periphrials are off when starting up

@@ -18,6 +18,7 @@ namespace AutoStillDotNet
         private BackgroundWorker UIUpdater;  //Updates the UI to reflect current sensor values
         //private BackgroundWorker ElementController; //Turns the element on and off to prevent overloading of the reflux column and condensor
         private BackgroundWorker PressureRegulator; //Determines when to turn the vaucuum pump on and off
+        private BackgroundWorker ElementRegulator; //Determines when to turn the vaucuum pump on and off
         private BackgroundWorker StillController; //Turns the element, pumps and valves on and off
         //private BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
         //private BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
@@ -47,12 +48,12 @@ namespace AutoStillDotNet
             chartRun.ChartAreas[0].AxisY2.IntervalAutoMode = IntervalAutoMode.FixedCount;
 
             
-            Series temperatureseries = new Series("Temperature");
-            temperatureseries.BorderWidth = 2;
-            temperatureseries.Color = Color.Red;
-            temperatureseries.XValueMember = nameof(RunRecord.rrTime);
-            temperatureseries.YValueMembers = nameof(RunRecord.rrColumnHeadTemp);
-            chartRun.Series[0] = temperatureseries;
+            Series columntempseries = new Series("Column Temperature");
+            columntempseries.BorderWidth = 2;
+            columntempseries.Color = Color.Red;
+            columntempseries.XValueMember = nameof(RunRecord.rrTime);
+            columntempseries.YValueMembers = nameof(RunRecord.rrColumnHeadTemp);
+            chartRun.Series[0] = columntempseries;
             chartRun.Series[0].ChartType = SeriesChartType.Line;
             chartRun.Series[0].XValueType = ChartValueType.DateTime;
 
@@ -67,6 +68,15 @@ namespace AutoStillDotNet
             chartRun.Series[1].YValueType = ChartValueType.Single;
             chartRun.Series[1].XValueType = ChartValueType.DateTime;
             chartRun.Series[1].YAxisType = AxisType.Secondary;
+
+            //Series stilltempseries = new Series("Still Fluid Temperature");
+            //stilltempseries.BorderWidth = 2;
+            //stilltempseries.Color = Color.PaleVioletRed;
+            //stilltempseries.XValueMember = nameof(RunRecord.rrTime);
+            //stilltempseries.YValueMembers = nameof(RunRecord.rrStillTemp);
+            //chartRun.Series[2] = stilltempseries;
+            //chartRun.Series[2].ChartType = SeriesChartType.Line;
+            //chartRun.Series[2].XValueType = ChartValueType.DateTime;
         }
 
 
@@ -83,7 +93,8 @@ namespace AutoStillDotNet
             //BackGroundWorkers.InitializeRelayBoard();
 
             SystemMonitor = BackGroundWorkers.InitializeSystemMonitor(MainDispatcher);
-            PressureRegulator = BackGroundWorkers.InitializePressureWorker(MainDispatcher);
+            PressureRegulator = BackGroundWorkers.InitializePressureWorker();
+            ElementRegulator = BackGroundWorkers.InitializeElementWorker();
             //FanController1 = BackGroundWorkers.InitializeFanController1(driver, MainDispatcher);
             //FanController2 = BackGroundWorkers.InitializeFanController2(driver, MainDispatcher);
 
@@ -171,8 +182,10 @@ namespace AutoStillDotNet
                 rrPressure = CurrentState.Pressure,
                 rrPhase = CurrentState.Phase,
                 rrAmperage = CurrentState.SystemAmperage,
-                rrRefluxTemperature = CurrentState.RefluxTemp,
-                rrCondensorTemperature = CurrentState.CondensorTemp
+                rrRefluxTemp = CurrentState.RefluxTemp,
+                rrCondensorTemp = CurrentState.CondensorTemp,
+                rrStillTemp = CurrentState.StillFluidTemp
+                
             };
 
             if (CurrentRun.Count < 2)
@@ -215,11 +228,11 @@ namespace AutoStillDotNet
                             break;
                     }
 
-                    decimal CurrentBoilingPoint = BoilingPointCalculator.Functions.GetWaterBoilingPoint(CurrentState.Pressure * 1000);
+                    CurrentState.TheoreticalBoilingPoint = BoilingPointCalculator.Functions.GetWaterBoilingPoint(CurrentState.Pressure * 1000);
 
                     MainDispatcher.Invoke(new Action(() => {
-                        lblPressure.Text = (CurrentState.Pressure) + "kPa";
-                        lblTheoretical.Text =  CurrentBoilingPoint + "°C";
+                        lblPressure.Text = CurrentState.Pressure + "kPa";
+                        lblTheoretical.Text =  CurrentState.TheoreticalBoilingPoint + "°C";
                         lblTemp1.Text = CurrentState.ColumnTemp + "°C";
                         lblTemp2.Text = CurrentState.StillFluidTemp + "°C";
                         lblTemp3.Text = CurrentState.RefluxTemp + "°C";
@@ -267,8 +280,7 @@ namespace AutoStillDotNet
         {
             RecordCurrentState();
 
-            BackGroundWorkers.EnableRelay(SystemProperties.StillElement);
-            CurrentState.ElementOn = true;            
+            ElementRegulator.RunWorkerAsync();                    
 
             CurrentState.PlateauTemp = 0;
             decimal StartTemp = CurrentRun.First().rrColumnHeadTemp;
@@ -315,8 +327,6 @@ namespace AutoStillDotNet
             {
                 decimal Temp1 = CurrentRun.Last().rrColumnHeadTemp;
                 decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrColumnHeadTemp;
-                decimal LastDelta = Math.Abs(((Temp2 - Temp1) / Temp2));
-
 
                 RecordCurrentState();
                 Thread.Sleep(RefreshRate);
@@ -329,6 +339,7 @@ namespace AutoStillDotNet
         public void DrainVessels()
         {
             PressureRegulator.CancelAsync();
+            ElementRegulator.CancelAsync();
             //FanController1.CancelAsync();
             //FanController2.CancelAsync();
             //while (PressureRegulator.CancellationPending == true || FanController1.CancellationPending == true || FanController2.CancellationPending == true)

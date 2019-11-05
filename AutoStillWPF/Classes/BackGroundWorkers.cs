@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Windows.Threading;
 
-namespace AutoStillDotNet
+namespace AutoStillWPF
 {
 
     public static class BackGroundWorkers
@@ -25,7 +25,7 @@ namespace AutoStillDotNet
 
         //These two relay functions exist to provide an easy way to switch to a debug mode
         public static void EnableRelay(int Device)
-        {
+        {            
             Relays.EnableRelay(Device);
         }
         public static void DisableRelay(int Device)
@@ -36,25 +36,11 @@ namespace AutoStillDotNet
         public static void InitializeDI2008()
         {
 
-            DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
-            DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
-            DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
-            DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            DI2008.Channels.Analog4 = ChannelConfiguration._5v; // System Pressure
-            DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
-            DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
-
-            DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
-            DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
-            DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
-            DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
-
-            ///////////////////////////////Dev Values//////////////////////////////////
-            //DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
-            //DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
+            //DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
+            //DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
             //DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
             //DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            //DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
+            //DI2008.Channels.Analog4 = ChannelConfiguration._5v; // System Pressure
             //DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
             //DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
 
@@ -62,6 +48,20 @@ namespace AutoStillDotNet
             //DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
             //DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
             //DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
+
+            ///////////////////////////////Dev Values//////////////////////////////////
+            DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
+            DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
+            DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
+            DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
+            DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
+            DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
+            DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
+
+            DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
+            DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
+            DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
+            DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
 
             DI2008.ConfigureChannels();
@@ -96,7 +96,7 @@ namespace AutoStillDotNet
             {
                 do
                 {
-                    if (Main.CurrentState.Run != true)
+                    if (StillController.CurrentState.Run != true)
                     { break; }
                     Thread.Sleep(1000);
                     bool success = false;
@@ -111,17 +111,17 @@ namespace AutoStillDotNet
 
                             MainDispatcher.Invoke(new Action(() =>
                             {
-                                Main.CurrentState.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
-                                //Main.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
-                                Main.CurrentState.StillFluidTemp = Math.Round(DI2008Data.Analog1.Value.Value, 2);
-                                Main.CurrentState.RefluxTemp = Math.Round(DI2008Data.Analog2.Value.Value, 2);
-                                Main.CurrentState.Pressure = Math.Round(((DI2008Data.Analog4.Value.Value / (5M / 306816.7M)) / 1000), 2); //Converts to Pascals and Divides by 1000 for Kilo Pascals -- 306816.7 is 44.5PSI converted Pascals which is the range measurable by the transducer
-                                //Main.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 306816.7M)) / 1000, 2);
-                                Main.CurrentState.SystemAmperage = DI2008Data.Analog5.Value.Value;
-                                Main.CurrentState.StillFull = DI2008Data.Digital0.Value == DigtitalState.High ? true : false;
-                                Main.CurrentState.StillEmpty = DI2008Data.Digital1.Value == DigtitalState.Low ? true : false;                                
-                                Main.CurrentState.RVEmpty = DI2008Data.Digital2.Value == DigtitalState.Low ? true : false;
-                                Main.CurrentState.RVFull = DI2008Data.Digital3.Value == DigtitalState.Low ? true : false;
+                                StillController.CurrentState.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
+                                StillController.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
+                                StillController.CurrentState.StillFluidTemp = Math.Round(DI2008Data.Analog1.Value.Value, 2);
+                                StillController.CurrentState.RefluxTemp = Math.Round(DI2008Data.Analog2.Value.Value, 2);
+                                StillController.CurrentState.Pressure = Math.Round(((DI2008Data.Analog4.Value.Value / (5M / 306816.7M)) / 1000), 2); //Converts to Pascals and Divides by 1000 for Kilo Pascals -- 306816.7 is 44.5PSI converted Pascals which is the range measurable by the transducer
+                                StillController.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 306816.7M)) / 1000, 2);
+                                StillController.CurrentState.SystemAmperage = DI2008Data.Analog5.Value.Value;
+                                StillController.CurrentState.StillFull = DI2008Data.Digital0.Value == DigtitalState.High ? true : false;
+                                StillController.CurrentState.StillEmpty = DI2008Data.Digital1.Value == DigtitalState.Low ? true : false;                                
+                                StillController.CurrentState.RVEmpty = DI2008Data.Digital2.Value == DigtitalState.Low ? true : false;
+                                StillController.CurrentState.RVFull = DI2008Data.Digital3.Value == DigtitalState.Low ? true : false;
 
 
 
@@ -131,7 +131,7 @@ namespace AutoStillDotNet
                         catch { }
 
                     }
-                    if (Main.CurrentState.Phase == -1) { Main.CurrentState.Phase = 0; }
+                    if (StillController.CurrentState.Phase == -1) { StillController.CurrentState.Phase = 0; }
                 } while (true);
             });
             return SystemMonitor;
@@ -144,30 +144,30 @@ namespace AutoStillDotNet
             PressureController.DoWork += new DoWorkEventHandler((state, args) =>
             {                
                 DisableRelay(SystemProperties.VacuumPump);
-                Main.CurrentState.VacuumPumpOn = false;
+                StillController.CurrentState.VacuumPumpOn = false;
                 do
                 {
                     try
                     {
-                        if (Main.CurrentState.Run != true || PressureController.CancellationPending == true)
+                        if (StillController.CurrentState.Run != true || PressureController.CancellationPending == true)
                         { break; }
 
                         Thread.Sleep(1000);
-                        if (Convert.ToDouble(Main.CurrentState.Pressure) > SystemProperties.TargetPressure && Main.CurrentState.VacuumPumpOn == false)
+                        if (Convert.ToDouble(StillController.CurrentState.Pressure) > SystemProperties.TargetPressure && StillController.CurrentState.VacuumPumpOn == false)
                         {
                             EnableRelay(SystemProperties.VacuumPump);
-                            Main.CurrentState.VacuumPumpOn = true;
+                            StillController.CurrentState.VacuumPumpOn = true;
 
                             //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
                             do
                             {
                                 Thread.Sleep(1000);
                             }
-                            while (Convert.ToDouble(Main.CurrentState.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureController.CancellationPending == false);
+                            while (Convert.ToDouble(StillController.CurrentState.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureController.CancellationPending == false);
 
                             //Once the pressure has reached its target turn the pump off
                             DisableRelay(SystemProperties.VacuumPump);
-                            Main.CurrentState.VacuumPumpOn = false;
+                            StillController.CurrentState.VacuumPumpOn = false;
                         }
                     }
                     catch {  }
@@ -183,19 +183,19 @@ namespace AutoStillDotNet
             ElementController.DoWork += new DoWorkEventHandler((state, args) =>
             {
                 DisableRelay(SystemProperties.StillElement);
-                Main.CurrentState.ElementOn = false;
+                StillController.CurrentState.ElementOn = false;
                 while (true)
                 {
-                    if (Main.CurrentState.Run != true || ElementController.CancellationPending == true)
+                    if (StillController.CurrentState.Run != true || ElementController.CancellationPending == true)
                     { break; }
 
-                    if (Main.CurrentState.StillFluidTemp < Main.CurrentState.TheoreticalBoilingPoint * 1.02M && (Main.CurrentState.Phase == 1 || Main.CurrentState.Phase == 2))
+                    if (StillController.CurrentState.StillFluidTemp < StillController.CurrentState.TheoreticalBoilingPoint * 1.02M && (StillController.CurrentState.Phase == 1 || StillController.CurrentState.Phase == 2))
                     {
                         EnableRelay(SystemProperties.StillElement);
-                        Main.CurrentState.ElementOn = true;
+                        StillController.CurrentState.ElementOn = true;
 
                         //Refresh the temperature every 5 seconds -- Note that the pressure is set in the still monitor background worker
-                        while (Main.CurrentState.TheoreticalBoilingPoint < Main.CurrentState.StillFluidTemp * 1.02M && ElementController.CancellationPending == false)
+                        while (StillController.CurrentState.TheoreticalBoilingPoint < StillController.CurrentState.StillFluidTemp * 1.02M && ElementController.CancellationPending == false)
                         {
                             Thread.Sleep(5000);
                         }
@@ -203,7 +203,7 @@ namespace AutoStillDotNet
 
                         //Once the pressure has reached its target turn the pump off
                         DisableRelay(SystemProperties.StillElement);
-                        Main.CurrentState.ElementOn = false;
+                        StillController.CurrentState.ElementOn = false;
                     }
                 } 
             });
@@ -217,21 +217,21 @@ namespace AutoStillDotNet
         //    FanController1.WorkerSupportsCancellation = true;
         //    FanController1.DoWork += new DoWorkEventHandler((state, args) =>
         //    {
-        //        double TargetTemp = Main.PlateauTemp - 1;
+        //        double TargetTemp = StillController.PlateauTemp - 1;
         //        byte FanSpeed = 50;
         //        do
         //        {
-        //            if (Main.Run != true || FanController1.CancellationPending == true)
+        //            if (StillController.Run != true || FanController1.CancellationPending == true)
         //            { break; }
         //            try
         //            {
         //                System.Threading.Thread.Sleep(10000);
-        //                if (Main.RefluxTemp > TargetTemp)
+        //                if (StillController.RefluxTemp > TargetTemp)
         //                {
         //                    FanSpeed = Convert.ToByte((int)FanSpeed + 5);
         //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
         //                }
-        //                else if (Main.RefluxTemp < TargetTemp)
+        //                else if (StillController.RefluxTemp < TargetTemp)
         //                {
         //                    FanSpeed = Convert.ToByte((int)FanSpeed - 5);
         //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
@@ -251,21 +251,21 @@ namespace AutoStillDotNet
         //    FanController2.WorkerSupportsCancellation = true;
         //    FanController2.DoWork += new DoWorkEventHandler((state, args) =>
         //    {
-        //        double LastTemp = Main.CondensorTemp;
+        //        double LastTemp = StillController.CondensorTemp;
         //        byte FanSpeed = 125;
         //        do
         //        {
-        //            if (Main.Run != true || FanController2.CancellationPending == true)
+        //            if (StillController.Run != true || FanController2.CancellationPending == true)
         //            { break; }
         //            try
         //            {
         //                System.Threading.Thread.Sleep(10000);
-        //                if (Main.CondensorTemp > LastTemp)
+        //                if (StillController.CondensorTemp > LastTemp)
         //                {
         //                    FanSpeed = Convert.ToByte((int)FanSpeed + 5);
         //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
         //                }
-        //                else if (Main.CondensorTemp < LastTemp)
+        //                else if (StillController.CondensorTemp < LastTemp)
         //                {
         //                    FanSpeed = Convert.ToByte((int)FanSpeed - 5);
         //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
