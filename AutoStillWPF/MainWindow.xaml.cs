@@ -24,12 +24,6 @@ namespace AutoStillWPF
             var Main = ((MainWindow)Application.Current.MainWindow);
             Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
 
-
-
-
-            ////modifying any series values will also animate and update the chart
-            //SeriesCollection[3].Values.Add(5d);
-
             var SeriesCollection = new SeriesCollection
                         {
                             new LineSeries
@@ -79,13 +73,8 @@ namespace AutoStillWPF
                     StillController.CurrentState.TheoreticalBoilingPoint = BoilingPointCalculator.Functions.GetWaterBoilingPoint(StillController.CurrentState.Pressure * 1000);
 
                     MainDispatcher.Invoke(new Action(() => {
-
-
-
-
                         Main.TemperatureChart.Series[0].Values.Add(StillController.CurrentState.ColumnTemp);
                         Main.PressureGauge.Value = Convert.ToDouble(StillController.CurrentState.Pressure);
-
 
                         Main.lblPressure.Content = StillController.CurrentState.Pressure + "kPa";
                         Main.lblTheoretical.Content = StillController.CurrentState.TheoreticalBoilingPoint + "°C";
@@ -98,13 +87,11 @@ namespace AutoStillWPF
                         Main.lblRVFull.Content = StillController.CurrentState.RVFull.ToString();
                         Main.lblStatus.Content = Status;
                     }));
-
-                    Thread.Sleep(250);
+                    Thread.Sleep(1000);
                 }
             });
 
             UIUpdater.RunWorkerAsync();
         }
-
     }
 }
