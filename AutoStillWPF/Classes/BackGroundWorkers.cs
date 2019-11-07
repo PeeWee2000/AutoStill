@@ -13,10 +13,7 @@ namespace AutoStillWPF
         private static BackgroundWorker SystemMonitor;  //Reads all the sensors and switches
         private static BackgroundWorker PressureController; //Determines when to turn the vaucuum pump on and off
         private static BackgroundWorker ElementController; //Determines when to turn the vaucuum pump on and off
-        //private static BackgroundWorker FanController1; //Turns the fan set for the reflux column on, off, up and down depending on target temperature and distillation speed
-        //private static BackgroundWorker FanController2; //Turns the fan set for the condensor on, off, up and down depending on target temperature and distillation speed
 
-        //public static RelayBoard Relays = new RelayBoard();
         public static RelayBoard Relays = new RelayBoard();
 
         private static DI2008 DI2008 = new DI2008();
@@ -36,18 +33,18 @@ namespace AutoStillWPF
         public static void InitializeDI2008()
         {
 
-            //DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
-            //DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
-            //DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
-            //DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            //DI2008.Channels.Analog4 = ChannelConfiguration._5v; // System Pressure
-            //DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
-            //DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
+            DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
+            DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
+            DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
+            DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
+            DI2008.Channels.Analog4 = ChannelConfiguration._5v; // System Pressure
+            DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
+            DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
 
-            //DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
-            //DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
-            //DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
-            //DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
+            DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
+            DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
+            DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
+            DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
             ///////////////////////////////Dev Values//////////////////////////////////
             DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
@@ -122,9 +119,6 @@ namespace AutoStillWPF
                                 StillController.CurrentState.StillEmpty = DI2008Data.Digital1.Value == DigtitalState.Low ? true : false;                                
                                 StillController.CurrentState.RVEmpty = DI2008Data.Digital2.Value == DigtitalState.Low ? true : false;
                                 StillController.CurrentState.RVFull = DI2008Data.Digital3.Value == DigtitalState.Low ? true : false;
-
-
-
                             }));
                             success = true;
                         }
@@ -158,14 +152,11 @@ namespace AutoStillWPF
                             EnableRelay(SystemProperties.VacuumPump);
                             StillController.CurrentState.VacuumPumpOn = true;
 
-                            //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
-                            do
+                            while (Convert.ToDouble(StillController.CurrentState.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureController.CancellationPending == false)
                             {
-                                Thread.Sleep(1000);
+                                Thread.Sleep(1000); //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
                             }
-                            while (Convert.ToDouble(StillController.CurrentState.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureController.CancellationPending == false);
 
-                            //Once the pressure has reached its target turn the pump off
                             DisableRelay(SystemProperties.VacuumPump);
                             StillController.CurrentState.VacuumPumpOn = false;
                         }
@@ -189,19 +180,16 @@ namespace AutoStillWPF
                     if (StillController.CurrentState.Run != true || ElementController.CancellationPending == true)
                     { break; }
 
-                    if (StillController.CurrentState.StillFluidTemp < StillController.CurrentState.TheoreticalBoilingPoint * 1.02M && (StillController.CurrentState.Phase == 1 || StillController.CurrentState.Phase == 2))
+                    if (StillController.CurrentState.StillFluidTemp <= StillController.CurrentState.TheoreticalBoilingPoint && (StillController.CurrentState.Phase == 1 || StillController.CurrentState.Phase == 2))
                     {
                         EnableRelay(SystemProperties.StillElement);
                         StillController.CurrentState.ElementOn = true;
 
-                        //Refresh the temperature every 5 seconds -- Note that the pressure is set in the still monitor background worker
                         while (StillController.CurrentState.TheoreticalBoilingPoint < StillController.CurrentState.StillFluidTemp * 1.02M && ElementController.CancellationPending == false)
                         {
-                            Thread.Sleep(5000);
+                            Thread.Sleep(5000); //Refresh the temperature every 5 seconds
                         }
-                            
 
-                        //Once the pressure has reached its target turn the pump off
                         DisableRelay(SystemProperties.StillElement);
                         StillController.CurrentState.ElementOn = false;
                     }

@@ -2,7 +2,12 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Threading;
+using LiveCharts;
+using LiveCharts.Geared;
+using LiveCharts.Wpf;
+using System.Linq;
 
 namespace AutoStillWPF
 {
@@ -18,6 +23,27 @@ namespace AutoStillWPF
             StillController.Start();
             var Main = ((MainWindow)Application.Current.MainWindow);
             Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
+
+
+
+
+            ////modifying any series values will also animate and update the chart
+            //SeriesCollection[3].Values.Add(5d);
+
+            var SeriesCollection = new SeriesCollection
+                        {
+                            new LineSeries
+                            {
+                                Title = "Column Temperature",
+                                Values = new ChartValues<decimal>(),
+                                PointGeometry = null
+                            }
+                        };
+
+            Main.TemperatureChart.Series = SeriesCollection;
+
+
+
 
 
             var UIUpdater = new BackgroundWorker();
@@ -52,24 +78,28 @@ namespace AutoStillWPF
 
                     StillController.CurrentState.TheoreticalBoilingPoint = BoilingPointCalculator.Functions.GetWaterBoilingPoint(StillController.CurrentState.Pressure * 1000);
 
+                    MainDispatcher.Invoke(new Action(() => {
 
-                    while (true)
-                    {
-                        MainDispatcher.Invoke(new Action(() => {
-                            Main.lblPressure.Content = StillController.CurrentState.Pressure + "kPa";
-                            Main.lblTheoretical.Content = StillController.CurrentState.TheoreticalBoilingPoint + "°C";
-                            Main.lblColumnTemp.Content = StillController.CurrentState.ColumnTemp + "°C";
-                            Main.lblStillTemp.Content = StillController.CurrentState.StillFluidTemp + "°C";
-                            Main.lblRefluxTemp.Content = StillController.CurrentState.RefluxTemp + "°C";
-                            Main.lblStillEmpty.Content = StillController.CurrentState.StillEmpty.ToString();
-                            Main.lblStillFull.Content = StillController.CurrentState.StillFull.ToString();
-                            Main.lblRVEmpty.Content = StillController.CurrentState.RVEmpty.ToString();
-                            Main.lblRVFull.Content = StillController.CurrentState.RVFull.ToString();
-                            Main.lblStatus.Content = Status;
-                        }));
-                        Thread.Sleep(250);
-                    }
 
+
+
+                        Main.TemperatureChart.Series[0].Values.Add(StillController.CurrentState.ColumnTemp);
+                        Main.PressureGauge.Value = Convert.ToDouble(StillController.CurrentState.Pressure);
+
+
+                        Main.lblPressure.Content = StillController.CurrentState.Pressure + "kPa";
+                        Main.lblTheoretical.Content = StillController.CurrentState.TheoreticalBoilingPoint + "°C";
+                        Main.lblColumnTemp.Content = StillController.CurrentState.ColumnTemp + "°C";
+                        Main.lblStillTemp.Content = StillController.CurrentState.StillFluidTemp + "°C";
+                        Main.lblRefluxTemp.Content = StillController.CurrentState.RefluxTemp + "°C";
+                        Main.lblStillEmpty.Content = StillController.CurrentState.StillEmpty.ToString();
+                        Main.lblStillFull.Content = StillController.CurrentState.StillFull.ToString();
+                        Main.lblRVEmpty.Content = StillController.CurrentState.RVEmpty.ToString();
+                        Main.lblRVFull.Content = StillController.CurrentState.RVFull.ToString();
+                        Main.lblStatus.Content = Status;
+                    }));
+
+                    Thread.Sleep(250);
                 }
             });
 
