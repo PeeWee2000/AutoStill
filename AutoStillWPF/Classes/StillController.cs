@@ -61,7 +61,7 @@ namespace AutoStillWPF
                     while (CurrentState.ColumnTemp == 0)
                     { Thread.Sleep(250); }
 
-                    FillStill();
+                    //FillStill();
                     CurrentState.Phase = 1;
 
                     HeatUntilPlateau();

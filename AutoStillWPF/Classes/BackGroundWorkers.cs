@@ -47,18 +47,18 @@ namespace AutoStillWPF
             DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
             ///////////////////////////////Dev Values//////////////////////////////////
-            DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
-            DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
-            DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
-            DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
-            DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
-            DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
+            //DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
+            //DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
+            //DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
+            //DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
+            //DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
+            //DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
+            //DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
 
-            DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
-            DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
-            DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
-            DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
+            //DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
+            //DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
+            //DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
+            //DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
 
             DI2008.ConfigureChannels();
@@ -102,18 +102,25 @@ namespace AutoStillWPF
                         try
                         {
                             DI2008Data = DI2008.Functions.ReadData();
-                            
+
                             while (!DI2008Data.Analog0.HasValue)
                             { Thread.Sleep(100); }
+
+
+                            decimal PressureVoltage = DI2008Data.Analog4.Value.Value;
+                            decimal CalibrationCorrection = (-55.3M * PressureVoltage) + 120M; //Determined via getting voltage at max vacuum and atmospheric pressure then plugging the Voltage / Actual values into this link https://www.symbolab.com/solver/slope-intercept-form-calculator/slope%20intercept%20%28-1%2C1%29%2C%28-2%2C-3%29?or=ex
+                            decimal PresureInKPa = PressureVoltage / (CalibrationCorrection / 1000);
 
                             MainDispatcher.Invoke(new Action(() =>
                             {
                                 StillController.CurrentState.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
-                                StillController.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
+                                //StillController.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
                                 StillController.CurrentState.StillFluidTemp = Math.Round(DI2008Data.Analog1.Value.Value, 2);
                                 StillController.CurrentState.RefluxTemp = Math.Round(DI2008Data.Analog2.Value.Value, 2);
                                 StillController.CurrentState.Pressure = Math.Round(((DI2008Data.Analog4.Value.Value / (5M / 306816.7M)) / 1000), 2); //Converts to Pascals and Divides by 1000 for Kilo Pascals -- 306816.7 is 44.5PSI converted Pascals which is the range measurable by the transducer
-                                StillController.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 306816.7M)) / 1000, 2);
+                                StillController.CurrentState.Pressure = Math.Round(PresureInKPa, 2);
+
+                                //StillController.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 306816.7M)) / 1000, 2);
                                 StillController.CurrentState.SystemAmperage = DI2008Data.Analog5.Value.Value;
                                 StillController.CurrentState.StillFull = DI2008Data.Digital0.Value == DigtitalState.High ? true : false;
                                 StillController.CurrentState.StillEmpty = DI2008Data.Digital1.Value == DigtitalState.Low ? true : false;                                
@@ -123,7 +130,6 @@ namespace AutoStillWPF
                             success = true;
                         }
                         catch { }
-
                     }
                     if (StillController.CurrentState.Phase == -1) { StillController.CurrentState.Phase = 0; }
                 } while (true);
