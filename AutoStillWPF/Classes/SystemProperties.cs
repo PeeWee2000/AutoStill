@@ -40,9 +40,6 @@ namespace AutoStillWPF
         public static byte SensorCoolantTemp1 { get; set; } = GetPin("sensorcoolanttemp1");
         public static byte SensorCoolantTemp2 { get; set; } = GetPin("sensorcoolanttemp2");
         public static byte SensorElementAmperage { get; set; } = GetPin("sensorelementamperage");
-        public static double TargetPressure { get; set; } = 65;
-        public static double TgtPresHysteresisBuffer { get; set; } = 15;
-        public static string Units { get; set; } = ConfigurationManager.AppSettings.Get("units");
         //public static SqlConnection sqlconnection { get; set; } = new SqlConnection(ConfigurationManager.ConnectionStrings["LocalDB"].ConnectionString);
 
     }

@@ -61,7 +61,7 @@ namespace AutoStillWPF
                     while (CurrentState.ColumnTemp == 0)
                     { Thread.Sleep(250); }
 
-                    //FillStill();
+                    FillStill();
                     CurrentState.Phase = 1;
 
                     HeatUntilPlateau();
@@ -123,29 +123,31 @@ namespace AutoStillWPF
 
         public static void FillStill()
         {
-            PressureRegulator.RunWorkerAsync();
+            if (CurrentState.StillFull == false) 
+            { 
+                BackGroundWorkers.EnableRelay(SystemProperties.StillFillValve);
+                CurrentState.StillValveOpen = true;
+                Thread.Sleep(3000); //Wait 3 seconds for the valve to open
 
-            BackGroundWorkers.EnableRelay(SystemProperties.StillFillValve);
-            CurrentState.StillValveOpen = true;
-            Thread.Sleep(3000); //Wait 3 seconds for the valve to open
+                BackGroundWorkers.EnableRelay(SystemProperties.StillFluidPump);
+                CurrentState.StillPumpOn = true;
 
-            BackGroundWorkers.EnableRelay(SystemProperties.StillFluidPump);
-            CurrentState.StillPumpOn = true;
+                while (CurrentState.StillFull == false)
+                { Thread.Sleep(RefreshRate); }
 
-            while (CurrentState.StillFull == false)
-            { Thread.Sleep(RefreshRate); }
+                BackGroundWorkers.DisableRelay(SystemProperties.StillFillValve);
+                CurrentState.StillValveOpen = false;
 
-            BackGroundWorkers.DisableRelay(SystemProperties.StillFillValve);
-            CurrentState.StillValveOpen = false;
-
-            BackGroundWorkers.DisableRelay(SystemProperties.StillFluidPump);
-            CurrentState.StillPumpOn = false;
+                BackGroundWorkers.DisableRelay(SystemProperties.StillFluidPump);
+                CurrentState.StillPumpOn = false;
+            }
         }
 
         public static void HeatUntilPlateau()
         {
             RecordCurrentState();
 
+            PressureRegulator.RunWorkerAsync();
             ElementRegulator.RunWorkerAsync();                    
 
             CurrentState.PlateauTemp = 0;
@@ -185,7 +187,7 @@ namespace AutoStillWPF
 
             //Once the first plateau is reached allowing for a 4 degree change at the most
             //or end the batch if the saftey limit switch is triggered also reset the Delta counters so the next step is not skipped
-            while (CurrentState.StillEmpty == false && CurrentState.RVFull == false && (CurrentRun.Last().rrColumnHeadTemp - CurrentState.PlateauTemp) < 5 )
+            while (CurrentState.StillEmpty == false && CurrentState.RVFull == false && CurrentState.ColumnTemp <= CurrentState.TheoreticalBoilingPoint )
             {
                 decimal Temp1 = CurrentRun.Last().rrColumnHeadTemp;
                 decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrColumnHeadTemp;

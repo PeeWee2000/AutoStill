@@ -78,16 +78,22 @@ namespace RelayController
 
         public void EnableRelay(int RelayID)
         {
+            try {
             Command[0] = (byte)(Command[0]  | GetBitPosition(RelayID));
             myFtdiDevice.Write(Command, 1, ref receivedBytes);
+            }
+            catch (Exception Ex) { throw Ex; }
 
 
         }
         public void DisableRelay(int RelayID)
         {
+            try {
             Command[0] = (byte)(Command[0] & (TotalBits - GetBitPosition(RelayID)));
             myFtdiDevice.Write(Command, 1, ref receivedBytes);
         }
+            catch (Exception Ex) { throw Ex; }
+}
 
         public static int GetBitPosition(int RelayID)
         {

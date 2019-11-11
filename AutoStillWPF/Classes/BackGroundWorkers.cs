@@ -23,11 +23,17 @@ namespace AutoStillWPF
         //These two relay functions exist to provide an easy way to switch to a debug mode
         public static void EnableRelay(int Device)
         {            
-            Relays.EnableRelay(Device);
+            lock (Relays)
+            { 
+                Relays.EnableRelay(Device);
+            }
         }
         public static void DisableRelay(int Device)
         {
-            Relays.DisableRelay(Device);
+            lock (Relays)
+            { 
+                Relays.DisableRelay(Device);
+            }
         }
 
         public static void InitializeDI2008()
@@ -140,35 +146,30 @@ namespace AutoStillWPF
         public static BackgroundWorker InitializePressureWorker()
         {
             PressureController = new BackgroundWorker();
-            PressureController.WorkerSupportsCancellation = true;
+            PressureController.WorkerSupportsCancellation = false;
             PressureController.DoWork += new DoWorkEventHandler((state, args) =>
             {                
                 DisableRelay(SystemProperties.VacuumPump);
                 StillController.CurrentState.VacuumPumpOn = false;
-                do
+                decimal LastPressure = -1M;
+                while (true)
                 {
-                    try
+                    if (Math.Abs(((StillController.CurrentState.Pressure - LastPressure) / LastPressure)) > .1M) //Run if the pressure has risen 10% above the "bottom out" pressure
                     {
-                        if (StillController.CurrentState.Run != true || PressureController.CancellationPending == true)
-                        { break; }
+                        EnableRelay(SystemProperties.VacuumPump);
+                        StillController.CurrentState.VacuumPumpOn = true;
 
-                        Thread.Sleep(1000);
-                        if (Convert.ToDouble(StillController.CurrentState.Pressure) > SystemProperties.TargetPressure && StillController.CurrentState.VacuumPumpOn == false)
+                        while (Math.Abs(((StillController.CurrentState.Pressure - LastPressure) / LastPressure)) > 0.01M ) //Run until the pressure stops going down
                         {
-                            EnableRelay(SystemProperties.VacuumPump);
-                            StillController.CurrentState.VacuumPumpOn = true;
-
-                            while (Convert.ToDouble(StillController.CurrentState.Pressure) > (SystemProperties.TargetPressure - SystemProperties.TgtPresHysteresisBuffer) && PressureController.CancellationPending == false)
-                            {
-                                Thread.Sleep(1000); //Refresh the pressure has changed every second -- Note that the pressure is set in the still monitor background worker
-                            }
-
-                            DisableRelay(SystemProperties.VacuumPump);
-                            StillController.CurrentState.VacuumPumpOn = false;
+                            LastPressure = StillController.CurrentState.Pressure == 0 ? -1 : StillController.CurrentState.Pressure;
+                            Thread.Sleep(20000);                        
                         }
+
+                        DisableRelay(SystemProperties.VacuumPump);
+                        StillController.CurrentState.VacuumPumpOn = false;
                     }
-                    catch {  }
-                } while (true);
+                    Thread.Sleep(StillController.RefreshRate);
+                }
             });
             return PressureController;
         }
@@ -191,13 +192,14 @@ namespace AutoStillWPF
                         EnableRelay(SystemProperties.StillElement);
                         StillController.CurrentState.ElementOn = true;
 
-                        while (StillController.CurrentState.TheoreticalBoilingPoint < StillController.CurrentState.StillFluidTemp * 1.02M && ElementController.CancellationPending == false)
+                        while ((StillController.CurrentState.TheoreticalBoilingPoint * 1.05M > StillController.CurrentState.StillFluidTemp || StillController.CurrentState.ColumnTemp < StillController.CurrentState.TheoreticalBoilingPoint * 0.95M) && ElementController.CancellationPending == false)
                         {
                             Thread.Sleep(5000); //Refresh the temperature every 5 seconds
                         }
 
                         DisableRelay(SystemProperties.StillElement);
                         StillController.CurrentState.ElementOn = false;
+                        Thread.Sleep(5000);
                     }
                 } 
             });
