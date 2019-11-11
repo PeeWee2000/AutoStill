@@ -1,12 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Threading;
-
-using System.Windows.Threading;
 using System.Linq;
-using System.Collections.Generic;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace AutoStillWPF
 {
@@ -23,8 +21,6 @@ namespace AutoStillWPF
         public static List<RunRecord> CurrentRun = new List<RunRecord>();
 
         public static int RefreshRate = 1000;
-
-
 
 
         public static void Start()
@@ -84,7 +80,6 @@ namespace AutoStillWPF
                 }
             });
 
-
             SystemMonitor.RunWorkerAsync();
             StillRegulator.RunWorkerAsync();
         }
@@ -106,7 +101,6 @@ namespace AutoStillWPF
                 rrRefluxTemp = CurrentState.RefluxTemp,
                 rrCondensorTemp = CurrentState.CondensorTemp,
                 rrStillTemp = CurrentState.StillFluidTemp
-                
             };
 
             if (CurrentRun.Count < 2)

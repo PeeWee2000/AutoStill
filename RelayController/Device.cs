@@ -70,10 +70,6 @@ namespace RelayController
             //    x = 1;
             //    Thread.Sleep(250);
             //}
-
-
-
-
         }
 
         public void EnableRelay(int RelayID)
