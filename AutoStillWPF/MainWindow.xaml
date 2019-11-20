@@ -26,20 +26,20 @@
             TicksStep="25"
             LabelsStep="50"            
             Margin="824,322,10,10"></lvc:AngularGauge>
-        <Label Content="System Status" HorizontalAlignment="Left" Margin="10,11,0,0" VerticalAlignment="Top" Width="90" FontWeight="Bold" RenderTransformOrigin="0.558,0.876"/>
-        <Label x:Name="lblStatus" Content="Status" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="90"/>
-        <Label Content="Theoretical Boiling Point" HorizontalAlignment="Left" Margin="10,125,0,0" VerticalAlignment="Top" Width="153" FontWeight="Bold"/>
-        <Label x:Name="lblTheoretical" Content="Temp X" HorizontalAlignment="Left" Margin="10,156,0,0" VerticalAlignment="Top" Width="142"/>
-        <Label Content="Column Head Temperature" HorizontalAlignment="Left" Margin="10,182,0,0" VerticalAlignment="Top" Width="162" FontWeight="Bold"/>
-        <Label x:Name="lblColumnTemp" Content="Temp 1" HorizontalAlignment="Left" Margin="10,208,0,0" VerticalAlignment="Top" Width="153"/>
-        <Label Content="Still Fluid Temperature" HorizontalAlignment="Left" Margin="10,234,0,0" VerticalAlignment="Top" Width="153" FontWeight="Bold"/>
-        <Label x:Name="lblStillTemp" Content="Temp 2" HorizontalAlignment="Left" Margin="10,260,0,0" VerticalAlignment="Top" Width="153"/>
-        <Label Content="Reflux Coolant Temperature" HorizontalAlignment="Left" Margin="10,291,0,0" VerticalAlignment="Top" Width="169" FontWeight="Bold"/>
-        <Label x:Name="lblRefluxTemp" Content="Temp 3" HorizontalAlignment="Left" Margin="10,322,0,0" VerticalAlignment="Top" Width="153"/>
+        <Label Content="System Status" HorizontalAlignment="Left" Margin="10,11,0,0" VerticalAlignment="Top" Width="94" FontWeight="Bold" RenderTransformOrigin="0.558,0.876"/>
+        <Label x:Name="lblStatus" Content="Status" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="94"/>
+        <Label Content="Theoretical Boiling Points" HorizontalAlignment="Left" Margin="10,63,0,0" VerticalAlignment="Top" Width="160" FontWeight="Bold"/>
+        <Label x:Name="lblTheoretical1" Content="Temp X" HorizontalAlignment="Left" Margin="10,94,0,0" VerticalAlignment="Top" Width="149"/>
+        <Label Content="Column Head Temperature" HorizontalAlignment="Left" Margin="10,182,0,0" VerticalAlignment="Top" Width="170" FontWeight="Bold"/>
+        <Label x:Name="lblColumnTemp" Content="Temp 1" HorizontalAlignment="Left" Margin="10,208,0,0" VerticalAlignment="Top" Width="160"/>
+        <Label Content="Still Fluid Temperature" HorizontalAlignment="Left" Margin="10,234,0,0" VerticalAlignment="Top" Width="160" FontWeight="Bold"/>
+        <Label x:Name="lblStillTemp" Content="Temp 2" HorizontalAlignment="Left" Margin="10,260,0,0" VerticalAlignment="Top" Width="160"/>
+        <Label Content="Reflux Coolant Temperature" HorizontalAlignment="Left" Margin="10,291,0,0" VerticalAlignment="Top" Width="177" FontWeight="Bold"/>
+        <Label x:Name="lblRefluxTemp" Content="Temp 3" HorizontalAlignment="Left" Margin="10,322,0,0" VerticalAlignment="Top" Width="160"/>
         <Label x:Name="lblPressure" Content="Pressure" HorizontalAlignment="Left" Margin="824,291,0,0" VerticalAlignment="Top" Width="113" HorizontalContentAlignment="Center"/>
         <Label Content="System Pressure" HorizontalAlignment="Left" Margin="824,260,0,0" VerticalAlignment="Top" Width="113" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-        <Label Content="Condenser Coolant Temp" HorizontalAlignment="Left" Margin="10,353,0,0" VerticalAlignment="Top" Width="162" FontWeight="Bold"/>
-        <Label x:Name="lblCondenserTemp" Content="Temp 4" HorizontalAlignment="Left" Margin="10,384,0,0" VerticalAlignment="Top" Width="153"/>
+        <Label Content="Condenser Coolant Temp" HorizontalAlignment="Left" Margin="10,353,0,0" VerticalAlignment="Top" Width="170" FontWeight="Bold"/>
+        <Label x:Name="lblCondenserTemp" Content="Temp 4" HorizontalAlignment="Left" Margin="10,384,0,0" VerticalAlignment="Top" Width="160"/>
         <Label x:Name="lblWaef" Content="Receiving Vessel Full" HorizontalAlignment="Left" Margin="192,182,0,0" VerticalAlignment="Top" Width="162" FontWeight="Bold"/>
         <Label x:Name="lblRVFull" Content="State" HorizontalAlignment="Left" Margin="192,208,0,0" VerticalAlignment="Top" Width="153"/>
         <Label Content="Receiving Vessel Empty" HorizontalAlignment="Left" Margin="192,125,0,0" VerticalAlignment="Top" Width="162" FontWeight="Bold"/>
@@ -48,5 +48,7 @@
         <Label x:Name="lblStillFull" Content="State" HorizontalAlignment="Left" Margin="192,94,0,0" VerticalAlignment="Top" Width="153"/>
         <Label Content="Still Empty" HorizontalAlignment="Left" Margin="192,11,0,0" VerticalAlignment="Top" Width="162" FontWeight="Bold"/>
         <Label x:Name="lblStillEmpty" Content="State" HorizontalAlignment="Left" Margin="192,37,0,0" VerticalAlignment="Top" Width="153"/>
+        <Label x:Name="lblTheoretical2" Content="Temp X" HorizontalAlignment="Left" Margin="10,120,0,0" VerticalAlignment="Top" Width="149"/>
+        <Label x:Name="lblTheoretical3" Content="Temp X" HorizontalAlignment="Left" Margin="10,146,0,0" VerticalAlignment="Top" Width="149"/>
     </Grid>
 </Window>

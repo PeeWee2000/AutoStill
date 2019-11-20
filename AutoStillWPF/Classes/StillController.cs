@@ -142,7 +142,7 @@ namespace AutoStillWPF
             RecordCurrentState();
 
             PressureRegulator.RunWorkerAsync();
-            ElementRegulator.RunWorkerAsync();                    
+            ElementRegulator.RunWorkerAsync();
 
             CurrentState.PlateauTemp = 0;
             decimal StartTemp = CurrentRun.First().rrColumnHeadTemp;

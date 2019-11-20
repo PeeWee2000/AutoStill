@@ -7,7 +7,6 @@ using System.Windows.Threading;
 
 namespace AutoStillWPF
 {
-
     public static class BackGroundWorkers
     {
         private static BackgroundWorker SystemMonitor;  //Reads all the sensors and switches
@@ -38,7 +37,6 @@ namespace AutoStillWPF
 
         public static void InitializeDI2008()
         {
-
             DI2008.Channels.Analog0 = ChannelConfiguration.KTypeTC; // Column Head
             DI2008.Channels.Analog1 = ChannelConfiguration.KTypeTC; // Reflux Jacket
             DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
@@ -53,18 +51,18 @@ namespace AutoStillWPF
             DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
             ///////////////////////////////Dev Values//////////////////////////////////
-            //DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
-            //DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
-            //DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
-            //DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
-            //DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
-            //DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
-            //DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
+            DI2008.Channels.Analog0 = ChannelConfiguration._10v; // Column Head
+            DI2008.Channels.Analog1 = ChannelConfiguration._10v; // Reflux Jacket
+            DI2008.Channels.Analog2 = ChannelConfiguration.KTypeTC; // Condenser Jacket
+            DI2008.Channels.Analog3 = ChannelConfiguration.KTypeTC; // Coolant Reservoir
+            DI2008.Channels.Analog4 = ChannelConfiguration._10v; // System Pressure
+            DI2008.Channels.Analog5 = ChannelConfiguration._100mv; // System Amperage
+            DI2008.Channels.Analog6 = ChannelConfiguration._100mv;
 
-            //DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
-            //DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
-            //DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
-            //DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
+            DI2008.Channels.Digital0 = ChannelConfiguration.DigitalInput; // Still Low Switch
+            DI2008.Channels.Digital1 = ChannelConfiguration.DigitalInput; // Still High Switch
+            DI2008.Channels.Digital2 = ChannelConfiguration.DigitalInput; // RV Low Switch
+            DI2008.Channels.Digital3 = ChannelConfiguration.DigitalInput; // RV High Swtich
 
 
             DI2008.ConfigureChannels();
@@ -114,19 +112,21 @@ namespace AutoStillWPF
 
 
                             decimal PressureVoltage = DI2008Data.Analog4.Value.Value;
-                            decimal CalibrationCorrection = (-55.3M * PressureVoltage) + 120M; //Determined via getting voltage at max vacuum and atmospheric pressure then plugging the Voltage / Actual values into this link https://www.symbolab.com/solver/slope-intercept-form-calculator/slope%20intercept%20%28-1%2C1%29%2C%28-2%2C-3%29?or=ex
+                            decimal CalibrationCorrection = (-55.3M * PressureVoltage) + 118M; //Determined via getting voltage at max vacuum and atmospheric pressure then plugging the Voltage / Actual values into this link https://www.symbolab.com/solver/slope-intercept-form-calculator/slope%20intercept%20%28-1%2C1%29%2C%28-2%2C-3%29?or=ex
                             decimal PresureInKPa = PressureVoltage / (CalibrationCorrection / 1000);
 
                             MainDispatcher.Invoke(new Action(() =>
                             {
                                 StillController.CurrentState.ColumnTemp = Math.Round(DI2008Data.Analog0.Value.Value, 2);
-                                //StillController.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10M / 1000M)), 2);
+                                
+                                StillController.CurrentState.ColumnTemp = Math.Round((DI2008Data.Analog0.Value.Value / (10 / 1000M)), 2);
+                                
                                 StillController.CurrentState.StillFluidTemp = Math.Round(DI2008Data.Analog1.Value.Value, 2);
-                                StillController.CurrentState.RefluxTemp = Math.Round(DI2008Data.Analog2.Value.Value, 2);
-                                StillController.CurrentState.Pressure = Math.Round(((DI2008Data.Analog4.Value.Value / (5M / 306816.7M)) / 1000), 2); //Converts to Pascals and Divides by 1000 for Kilo Pascals -- 306816.7 is 44.5PSI converted Pascals which is the range measurable by the transducer
+                                StillController.CurrentState.RefluxTemp = Math.Round(DI2008Data.Analog2.Value.Value, 2);                                                                                                   
                                 StillController.CurrentState.Pressure = Math.Round(PresureInKPa, 2);
-
-                                //StillController.CurrentState.Pressure = Math.Round((DI2008Data.Analog1.Value.Value / (10M / 306816.7M)) / 1000, 2);
+                                
+                                StillController.CurrentState.Pressure = Math.Round(((DI2008Data.Analog1.Value.Value / (10 / 306816.7M)) / 1000), 2); //Converts to Pascals and Divides by 1000 for Kilo Pascals -- 306816.7 is 44.5PSI converted Pascals which is the range measurable by the transducer
+                                
                                 StillController.CurrentState.SystemAmperage = DI2008Data.Analog5.Value.Value;
                                 StillController.CurrentState.StillFull = DI2008Data.Digital0.Value == DigtitalState.High ? true : false;
                                 StillController.CurrentState.StillEmpty = DI2008Data.Digital1.Value == DigtitalState.Low ? true : false;                                
@@ -146,7 +146,7 @@ namespace AutoStillWPF
         public static BackgroundWorker InitializePressureWorker()
         {
             PressureController = new BackgroundWorker();
-            PressureController.WorkerSupportsCancellation = false;
+            PressureController.WorkerSupportsCancellation = true;
             PressureController.DoWork += new DoWorkEventHandler((state, args) =>
             {                
                 DisableRelay(SystemProperties.VacuumPump);
@@ -162,7 +162,7 @@ namespace AutoStillWPF
                         while (Math.Abs(((StillController.CurrentState.Pressure - LastPressure) / LastPressure)) > 0.01M ) //Run until the pressure stops going down
                         {
                             LastPressure = StillController.CurrentState.Pressure == 0 ? -1 : StillController.CurrentState.Pressure;
-                            Thread.Sleep(20000);                        
+                            Thread.Sleep(20000);
                         }
 
                         DisableRelay(SystemProperties.VacuumPump);
@@ -196,7 +196,7 @@ namespace AutoStillWPF
                         {
                             Thread.Sleep(5000); //Refresh the temperature every 5 seconds
                         }
-
+                        
                         DisableRelay(SystemProperties.StillElement);
                         StillController.CurrentState.ElementOn = false;
                         Thread.Sleep(5000);
@@ -204,73 +204,6 @@ namespace AutoStillWPF
                 } 
             });
             return ElementController;
-        }
-        //public static BackgroundWorker InitializeFanController1(ArduinoDriver.ArduinoDriver driver, Dispatcher MainDispatcher)
-        //{
-        //    //Turns fan set 1 on, off, up and down 
-        //    //The target temperature should be just under the distillation plateau temp so it doesnt slow down the distillation process but keeps the column cool enough that only the target substance can come over
-        //    FanController1 = new BackgroundWorker();
-        //    FanController1.WorkerSupportsCancellation = true;
-        //    FanController1.DoWork += new DoWorkEventHandler((state, args) =>
-        //    {
-        //        double TargetTemp = StillController.PlateauTemp - 1;
-        //        byte FanSpeed = 50;
-        //        do
-        //        {
-        //            if (StillController.Run != true || FanController1.CancellationPending == true)
-        //            { break; }
-        //            try
-        //            {
-        //                System.Threading.Thread.Sleep(10000);
-        //                if (StillController.RefluxTemp > TargetTemp)
-        //                {
-        //                    FanSpeed = Convert.ToByte((int)FanSpeed + 5);
-        //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
-        //                }
-        //                else if (StillController.RefluxTemp < TargetTemp)
-        //                {
-        //                    FanSpeed = Convert.ToByte((int)FanSpeed - 5);
-        //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
-        //                }
-        //            }
-        //            catch {  }
-        //        } while (true);
-        //    });
-        //    return FanController1;
-        //}
-
-        //    public static BackgroundWorker InitializeFanController2(ArduinoDriver.ArduinoDriver driver, Dispatcher MainDispatcher)
-        //{
-        //    //Turns fan set 2 on, off, up and down 
-        //    //The idea here is to start the fan at half speed, see if and see it has any noticable effect on temperature -- if the temperature drops maintain the speed, if it rises increase the speed, if it drops lower the speed
-        //    FanController2 = new BackgroundWorker();
-        //    FanController2.WorkerSupportsCancellation = true;
-        //    FanController2.DoWork += new DoWorkEventHandler((state, args) =>
-        //    {
-        //        double LastTemp = StillController.CondensorTemp;
-        //        byte FanSpeed = 125;
-        //        do
-        //        {
-        //            if (StillController.Run != true || FanController2.CancellationPending == true)
-        //            { break; }
-        //            try
-        //            {
-        //                System.Threading.Thread.Sleep(10000);
-        //                if (StillController.CondensorTemp > LastTemp)
-        //                {
-        //                    FanSpeed = Convert.ToByte((int)FanSpeed + 5);
-        //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
-        //                }
-        //                else if (StillController.CondensorTemp < LastTemp)
-        //                {
-        //                    FanSpeed = Convert.ToByte((int)FanSpeed - 5);
-        //                    MainDispatcher.Invoke(new Action(() => { driver.Send(new AnalogWriteRequest(SystemProperties.FanController1, FanSpeed)); }));
-        //                }
-        //            }
-        //            catch {  }
-        //        } while (true);
-        //    });
-        //    return FanController2;
-        //}
+        }      
     }
 }

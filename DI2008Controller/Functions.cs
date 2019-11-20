@@ -213,8 +213,6 @@ namespace DI2008Controller
                 {
                     ChannelData.Value = ActualValue;
                 }
-
-
                 Data.GetType().GetProperty(ChannelName).SetValue(Data, ChannelData);
             }
         }
@@ -230,6 +228,5 @@ namespace DI2008Controller
                 Data.GetType().GetProperty("Digital" + ChannelState.Item1).SetValue(Data, State);
             }
         }
-
     }
 }

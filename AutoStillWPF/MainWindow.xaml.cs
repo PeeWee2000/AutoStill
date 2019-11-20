@@ -1,13 +1,10 @@
-﻿using System;
+﻿using LiveCharts;
+using LiveCharts.Wpf;
+using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Threading;
-using LiveCharts;
-using LiveCharts.Geared;
-using LiveCharts.Wpf;
-using System.Linq;
 
 namespace AutoStillWPF
 {
@@ -24,34 +21,45 @@ namespace AutoStillWPF
             var Main = ((MainWindow)Application.Current.MainWindow);
             Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
 
-            var SeriesCollection = new SeriesCollection
-                        {
-                            new LineSeries
-                            {
-                                Title = "Column Temperature",
-                                Values = new ChartValues<decimal>(),
-                                PointGeometry = null
-                            }
-                        };
-
-            Main.TemperatureChart.Series = SeriesCollection;
-
-
-
+            Main.TemperatureChart.Series = new SeriesCollection
+            {
+                new LineSeries
+                {
+                    Title = "Column Temperature",
+                    Values = new ChartValues<decimal>(),
+                    PointGeometry = null
+                },
+                new LineSeries
+                {
+                    Title = "Still Fluid Temperature",
+                    Values = new ChartValues<decimal>(),
+                    PointGeometry = null
+                },
+                new LineSeries
+                {
+                    Title = "Theoretical Boiling Point",
+                    Values = new ChartValues<decimal>(),
+                    PointGeometry = null
+                },
+                new LineSeries
+                {
+                    Title = "Pressure",
+                    Values = new ChartValues<decimal>(),
+                    PointGeometry = null
+                }
+            };
 
 
             var UIUpdater = new BackgroundWorker();
             UIUpdater.WorkerSupportsCancellation = true;
             UIUpdater.DoWork += new DoWorkEventHandler((state, args) =>
             {
-                
-
-
                 string Status;
 
                 while (true)
                 {
-                    switch (StillController.CurrentState.Phase)
+                    var CurrentState = StillController.CurrentState;
+                    switch (CurrentState.Phase)
                     {
                         case 0:
                             Status = "Filling Still";
@@ -70,27 +78,33 @@ namespace AutoStillWPF
                             break;
                     }
 
-                    StillController.CurrentState.TheoreticalBoilingPoint = BoilingPointCalculator.Functions.GetWaterBoilingPoint(StillController.CurrentState.Pressure * 1000);
-
+                    CurrentState.TheoreticalBoilingPoint = BoilingPointCalculator.Functions.GetWaterBoilingPoint(CurrentState.Pressure * 1000);
+                    decimal MeOHBoilingPoint = BoilingPointCalculator.Functions.GetMeOHBoilingPoint(CurrentState.Pressure * 1000);
+                    decimal EtOHBoilingPoint = BoilingPointCalculator.Functions.GetEtOHBoilingPoint(CurrentState.Pressure * 1000);
                     MainDispatcher.Invoke(new Action(() => {
-                        Main.TemperatureChart.Series[0].Values.Add(StillController.CurrentState.ColumnTemp);
-                        Main.PressureGauge.Value = Convert.ToDouble(StillController.CurrentState.Pressure);
+                        //Main.TemperatureChart.Series[0].Values.Add(CurrentState.ColumnTemp);
+                        //Main.TemperatureChart.Series[1].Values.Add(CurrentState.StillFluidTemp);
+                        //Main.TemperatureChart.Series[2].Values.Add(CurrentState.TheoreticalBoilingPoint);
+                        //Main.TemperatureChart.Series[3].Values.Add(CurrentState.Pressure);
 
-                        Main.lblPressure.Content = StillController.CurrentState.Pressure + "kPa";
-                        Main.lblTheoretical.Content = StillController.CurrentState.TheoreticalBoilingPoint + "°C";
-                        Main.lblColumnTemp.Content = StillController.CurrentState.ColumnTemp + "°C";
-                        Main.lblStillTemp.Content = StillController.CurrentState.StillFluidTemp + "°C";
-                        Main.lblRefluxTemp.Content = StillController.CurrentState.RefluxTemp + "°C";
-                        Main.lblStillEmpty.Content = StillController.CurrentState.StillEmpty.ToString();
-                        Main.lblStillFull.Content = StillController.CurrentState.StillFull.ToString();
-                        Main.lblRVEmpty.Content = StillController.CurrentState.RVEmpty.ToString();
-                        Main.lblRVFull.Content = StillController.CurrentState.RVFull.ToString();
+                        Main.PressureGauge.Value = Convert.ToDouble(CurrentState.Pressure);
+
+                        Main.lblPressure.Content = CurrentState.Pressure + "kPa";
+                        Main.lblTheoretical1.Content = "Water : " + CurrentState.TheoreticalBoilingPoint + "°C";
+                        Main.lblTheoretical2.Content = "Ethanol : " + EtOHBoilingPoint + "°C";
+                        Main.lblTheoretical3.Content = "Methanol : " + MeOHBoilingPoint + "°C";
+                        Main.lblColumnTemp.Content = CurrentState.ColumnTemp + "°C";
+                        Main.lblStillTemp.Content = CurrentState.StillFluidTemp + "°C";
+                        Main.lblRefluxTemp.Content = CurrentState.RefluxTemp + "°C";
+                        Main.lblStillEmpty.Content = CurrentState.StillEmpty.ToString();
+                        Main.lblStillFull.Content = CurrentState.StillFull.ToString();
+                        Main.lblRVEmpty.Content = CurrentState.RVEmpty.ToString();
+                        Main.lblRVFull.Content = CurrentState.RVFull.ToString();
                         Main.lblStatus.Content = Status;
                     }));
-                    Thread.Sleep(1000);
+                    Thread.Sleep(250);
                 }
             });
-
             UIUpdater.RunWorkerAsync();
         }
     }

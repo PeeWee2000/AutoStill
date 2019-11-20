@@ -1,13 +1,12 @@
-﻿using System.Data.SqlClient;
+﻿using System;
 using System.Configuration;
-using System;
 using System.Text.RegularExpressions;
 
 namespace AutoStillWPF
 {
     public static class SystemProperties
     {
-        private static byte GetPin(String Periphrial)
+        private static byte GetPin(string Periphrial)
         {
             try
             { return Convert.ToByte(Regex.Match(ConfigurationManager.AppSettings.Get(Periphrial), @"(?<=Pin=)\d+").Value); }
