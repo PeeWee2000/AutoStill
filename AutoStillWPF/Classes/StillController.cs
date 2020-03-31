@@ -17,7 +17,7 @@ namespace AutoStillWPF
 
         private static StillStatsEntities Context = new StillStatsEntities();
 
-        public static Variables CurrentState = new Variables(); 
+        public static StateVariables CurrentState = new StateVariables(); 
         public static List<RunRecord> CurrentRun = new List<RunRecord>();
 
         public static int RefreshRate = 1000;
@@ -60,11 +60,8 @@ namespace AutoStillWPF
                     FillStill();
                     CurrentState.Phase = 1;
 
-                    HeatUntilPlateau();
-                    CurrentState.Phase = 2;
-
                     Distill();
-                    CurrentState.Phase = 3;
+                    CurrentState.Phase = 2;
 
                     DrainVessels();
 
@@ -110,7 +107,7 @@ namespace AutoStillWPF
 
             CurrentRun.Add(Data);
             
-            return Data;
+            return Data;           
         }
 
 
@@ -121,7 +118,7 @@ namespace AutoStillWPF
             { 
                 BackGroundWorkers.EnableRelay(SystemProperties.StillFillValve);
                 CurrentState.StillValveOpen = true;
-                Thread.Sleep(3000); //Wait 3 seconds for the valve to open
+                Thread.Sleep(3000); //Wait 3 seconds for the valve to open                
 
                 BackGroundWorkers.EnableRelay(SystemProperties.StillFluidPump);
                 CurrentState.StillPumpOn = true;
@@ -137,55 +134,53 @@ namespace AutoStillWPF
             }
         }
 
-        public static void HeatUntilPlateau()
-        {
-            RecordCurrentState();
+        //public static void HeatUntilPlateau()
+        //{
+        //    RecordCurrentState();
 
-            PressureRegulator.RunWorkerAsync();
-            ElementRegulator.RunWorkerAsync();
+        //    PressureRegulator.RunWorkerAsync();
+        //    ElementRegulator.RunWorkerAsync();
 
-            CurrentState.PlateauTemp = 0;
-            decimal StartTemp = CurrentRun.First().rrColumnHeadTemp;
-            decimal LastDelta = 0M;
-            decimal TotalDelta = 0M;
+        //    CurrentState.PlateauTemp = 0;
+        //    decimal StartTemp = CurrentRun.First().rrColumnHeadTemp;
+        //    decimal LastDelta = 0M;
+        //    decimal TotalDelta = 0M;
 
 
-            while (CurrentState.StillEmpty == false &&  CurrentState.RVFull == false && CurrentState.ColumnTemp <= StartTemp * 1.1M || CurrentRun.Count < 20)
-            {
-                if (CurrentState.ColumnTemp > StartTemp)
-                {
-                    RecordCurrentState();
-                }
-                Thread.Sleep(RefreshRate);
-            }
+        //    while (!CurrentState.StillEmpty &&  !CurrentState.RVFull && (CurrentState.ColumnTemp <= StartTemp * 1.1M || CurrentRun.Count < 20))
+        //    {
+        //        if (CurrentState.ColumnTemp > StartTemp)
+        //        {
+        //            RecordCurrentState();
+        //        }
+        //        Thread.Sleep(RefreshRate);
+        //    }
 
-            while ((CurrentState.StillEmpty == false && CurrentState.RVFull == false && LastDelta >= 0.02M) || TotalDelta < 0.25M)
-            {
-               decimal Temp1 = CurrentRun[CurrentRun.Count - 1].rrColumnHeadTemp;
-               decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrColumnHeadTemp;
+        //    while ((!CurrentState.StillEmpty && !CurrentState.RVFull && (LastDelta >= 0.02M) || TotalDelta < 0.25M))
+        //    {
+        //       decimal Temp1 = CurrentRun[CurrentRun.Count - 1].rrColumnHeadTemp;
+        //       decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrColumnHeadTemp;
 
-                LastDelta = Temp2 != 0 ? ((Temp2 - Temp1) / Temp2) : 0;
-                if (Temp2 > Temp1)
-                { TotalDelta = Temp2 != 0 ? ((Temp2 - StartTemp) / Temp2) : 0; }
+        //        LastDelta = Temp2 != 0 ? ((Temp2 - Temp1) / Temp2) : 0;
+        //        if (Temp2 > Temp1)
+        //        { TotalDelta = Temp2 != 0 ? ((Temp2 - StartTemp) / Temp2) : 0; }
 
-                RecordCurrentState();
-                Thread.Sleep(RefreshRate);
-            }
-        }
+        //        RecordCurrentState();
+        //        Thread.Sleep(RefreshRate);
+        //    }
+        //}
 
         public static void Distill()
         {
-            CurrentState.PlateauTemp = CurrentRun.Last().rrColumnHeadTemp;
+
+            PressureRegulator.RunWorkerAsync();
+            ElementRegulator.RunWorkerAsync();
+            //CurrentState.PlateauTemp = CurrentRun.Last().rrColumnHeadTemp;
             BackGroundWorkers.EnableRelay(SystemProperties.CoolantPump);
 
-
-            //Once the first plateau is reached allowing for a 4 degree change at the most
-            //or end the batch if the saftey limit switch is triggered also reset the Delta counters so the next step is not skipped
-            while (CurrentState.StillEmpty == false && CurrentState.RVFull == false && CurrentState.ColumnTemp <= CurrentState.TheoreticalBoilingPoint )
+            //Keep distilling as long as the theoretical boiling point is not overran allowing for a 2% margin of error in calculation
+            while (!CurrentState.StillEmpty && !CurrentState.RVFull && CurrentState.ColumnTemp <= CurrentState.TheoreticalBoilingPoint * 1.02M)
             {
-                decimal Temp1 = CurrentRun.Last().rrColumnHeadTemp;
-                decimal Temp2 = CurrentRun[CurrentRun.Count - 20].rrColumnHeadTemp;
-
                 RecordCurrentState();
                 Thread.Sleep(RefreshRate);
             }
@@ -201,7 +196,6 @@ namespace AutoStillWPF
 
             while (PressureRegulator.CancellationPending == true)
             { Thread.Sleep(100); }
-
 
             //Fill the system with air so it is at a neutral pressure before pumping any fluids -- note that the system will pull air from the drain valve  
             //since it eventually vents somewhere that is at atmospheric pressure

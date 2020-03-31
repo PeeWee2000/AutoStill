@@ -65,12 +65,9 @@ namespace AutoStillWPF
                             Status = "Filling Still";
                             break;
                         case 1:
-                            Status = "Heating";
-                            break;
-                        case 2:
                             Status = "Distilling";
                             break;
-                        case 3:
+                        case 2:
                             Status = "Draining Vessels";
                             break;
                         default:

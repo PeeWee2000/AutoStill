@@ -3,12 +3,12 @@
     /// <summary>
     /// Varaiables written to and read by all the various loops -- Assumes the still is empty and all periphrials are off when starting up
     /// </summary>
-    public class Variables
+    public class StateVariables
     {
         /// <summary>
         /// Varaiables written to and read by all the various loops -- Assumes the still is empty and all periphrials are off when starting up
         /// </summary>
-        public Variables()
+        public StateVariables()
         { }
 
         public decimal ColumnTemp { get; set; }

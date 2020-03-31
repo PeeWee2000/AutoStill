@@ -80,7 +80,7 @@
     <Compile Include="Classes\BackGroundWorkers.cs" />
     <Compile Include="Classes\StillController.cs" />
     <Compile Include="Classes\SystemProperties.cs" />
-    <Compile Include="Classes\Variables.cs" />
+    <Compile Include="Classes\StateVariables.cs" />
     <Compile Include="RunHeader.cs">
       <DependentUpon>StillStats.tt</DependentUpon>
     </Compile>
